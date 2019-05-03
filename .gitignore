@@ -1,5 +1,7 @@
-# Compiled class file
+# Compiled class file and artifcats
 *.class
+build/
+out/
 
 # Log file
 *.log
@@ -29,3 +31,5 @@ hs_err_pid*
 *.iml
 .idea
 
+# MacOs files
+.DS_Store
