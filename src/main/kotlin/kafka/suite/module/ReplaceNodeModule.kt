@@ -24,7 +24,8 @@ class ReplaceNodeModule : RunnableModule {
         val topics = cli.get(t, emptySet()) { it.first().toString().split(",").toSet() }
 
         val brokers = kafkaAdminClient.brokers()
-        println("Moving all partition for ${if (topics.isEmpty()) "all" else topics} from node $replacing [${brokers.getValue(replacing).address}]  to node $substitution [${brokers.getValue(substitution).address}]")
+        println("Moving all partition for ${if (topics.isEmpty()) "all" else topics.toString()} from " +
+                "node $replacing [${brokers.getValue(replacing).address}]  to node $substitution [${brokers.getValue(substitution).address}]")
 
         val strategy = ReplaceNodePartitionAssignmentStrategy(kafkaAdminClient, replacing, substitution, topics)
         val newPlan = strategy.newPlan()

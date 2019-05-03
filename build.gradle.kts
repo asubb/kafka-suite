@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 object Version {
@@ -9,12 +10,10 @@ object Version {
 
 plugins {
     kotlin("jvm") version "1.3.31"
-
 }
 
-apply {
-    plugin("kotlin")
-}
+apply<ApplicationPlugin>()
+apply<KotlinPluginWrapper>()
 
 repositories {
     jcenter()
@@ -54,3 +53,9 @@ val test by tasks.getting(Test::class) {
         includeEngines("spek2")
     }
 }
+
+configure<ApplicationPluginConvention> {
+    applicationName = "ksuite"
+    mainClassName = "kafka.suite.KafkaSuiteKt"
+}
+
