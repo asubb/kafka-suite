@@ -1,6 +1,7 @@
 package kafka.suite.replacenode
 
 import kafka.suite.*
+import kafka.suite.client.KafkaAdminClient
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
@@ -30,6 +31,8 @@ class ReplaceNodeModule : RunnableModule {
         println("New assigment plan: $newPlan")
 
         if (!dryRun) {
+            // TODO check if there is an assignment in progress
+
             if (!kafkaAdminClient.reassignPartitions(newPlan)) {
                 println("ERROR: Can't reassign partitions")
                 return

@@ -1,8 +1,8 @@
 package kafka.suite.replacenode
 
-import kafka.suite.KafkaAdminClient
 import kafka.suite.KafkaPartitionAssignment
 import kafka.suite.PartitionAssignmentStrategy
+import kafka.suite.client.KafkaAdminClient
 
 class ReplaceNodePartitionAssignmentStrategy(
         private val client: KafkaAdminClient,
@@ -11,7 +11,7 @@ class ReplaceNodePartitionAssignmentStrategy(
         private val limitToTopics: Set<String>
 ) : PartitionAssignmentStrategy {
     override fun newPlan(): KafkaPartitionAssignment {
-        val plan = client.currentAssignment()
+        val plan = client.currentAssignment(limitToTopics)
         return KafkaPartitionAssignment(
                 plan.version,
                 plan.partitions

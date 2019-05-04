@@ -1,6 +1,12 @@
-package kafka.suite
+package kafka.suite.client
 
-import kafka.admin.*
+import kafka.admin.ReassignPartitionsCommand
+import kafka.admin.ReassignmentCompleted
+import kafka.admin.ReassignmentFailed
+import kafka.admin.`ReassignPartitionsCommand$`
+import kafka.suite.KafkaBroker
+import kafka.suite.KafkaPartitionAssignment
+import kafka.suite.Partition
 import kafka.suite.util.*
 import kafka.zk.AdminZkClient
 import kafka.zk.KafkaZkClient
@@ -11,10 +17,10 @@ import org.apache.kafka.common.TopicPartitionReplica
 import org.apache.kafka.common.utils.Time
 import scala.collection.Seq
 
-class KafkaAdminClient(
-        val bootstrapServer: String,
-        val zkConnectionString: String
-) {
+class ScalaKafkaAdminClient(
+        bootstrapServer: String,
+        zkConnectionString: String
+) : kafka.suite.client.KafkaAdminClient {
     private val adminClient = AdminClient.create(mapOf("bootstrap.servers" to bootstrapServer))
 
     private val kafkaZkClient = KafkaZkClient(ZooKeeperClient(
@@ -30,13 +36,14 @@ class KafkaAdminClient(
 
     private val zkClient = AdminZkClient(kafkaZkClient)
 
-    fun topics(): Map<String, List<Partition>> {
+    override fun topics(limitToTopics: Set<String>): Map<String, List<Partition>> {
         val names = adminClient.listTopics().names().get()
         val topics = adminClient
                 .describeTopics(names)
                 .all()
                 .get()
-                .entries
+                .entries.asSequence()
+                .filter { limitToTopics.isEmpty() || it.key in limitToTopics }
                 .map { e ->
                     e.key!! to e.value!!.partitions().map {
                         Partition(e.key, it.partition(), it.replicas().map { n -> n.id() })
@@ -46,7 +53,7 @@ class KafkaAdminClient(
         return topics
     }
 
-    fun brokers(): Map<Int, KafkaBroker> {
+    override fun brokers(): Map<Int, KafkaBroker> {
         return fromScala(kafkaZkClient.allBrokersInCluster)
                 .map {
                     it.id() to KafkaBroker(
@@ -58,13 +65,14 @@ class KafkaAdminClient(
                 .toMap()
     }
 
-    fun currentAssignment(version: Int = 1): KafkaPartitionAssignment {
+    override fun currentAssignment(limitToTopics: Set<String>, version: Int): KafkaPartitionAssignment {
         val names = adminClient.listTopics().names().get()
         val partitions = adminClient
                 .describeTopics(names)
                 .all()
                 .get()
                 .entries.asSequence()
+                .filter { limitToTopics.isEmpty() || it.key in limitToTopics }
                 .flatMap { e -> e.value.partitions().asSequence().map { e.key to it } }
                 .map { e ->
                     Partition(e.first, e.second.partition(), e.second.replicas().map { it.id() })
@@ -73,7 +81,7 @@ class KafkaAdminClient(
         return KafkaPartitionAssignment(version, partitions)
     }
 
-    fun reassignPartitions(plan: KafkaPartitionAssignment): Boolean {
+    override fun reassignPartitions(plan: KafkaPartitionAssignment): Boolean {
         val assignmentPlan = createAssignmentPlan(plan)
         val cmd = ReassignPartitionsCommand(
                 kafkaZkClient,
@@ -88,7 +96,7 @@ class KafkaAdminClient(
         )
     }
 
-    fun isReassignmentFinished(plan: KafkaPartitionAssignment): Boolean {
+    override fun isReassignmentFinished(plan: KafkaPartitionAssignment): Boolean {
         val assignmentPlan = createAssignmentPlan(plan)
         return fromScala(`ReassignPartitionsCommand$`.`MODULE$`.checkIfPartitionReassignmentSucceeded(
                 kafkaZkClient,

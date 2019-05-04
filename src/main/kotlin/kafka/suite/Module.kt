@@ -1,5 +1,6 @@
 package kafka.suite
 
+import kafka.suite.client.KafkaAdminClient
 import kafka.suite.replacenode.ReplaceNodeModule
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Options
