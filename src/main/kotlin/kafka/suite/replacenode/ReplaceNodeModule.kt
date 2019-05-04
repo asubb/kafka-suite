@@ -1,9 +1,6 @@
-package kafka.suite.module
+package kafka.suite.replacenode
 
-import kafka.suite.KafkaAdminClient
-import kafka.suite.get
-import kafka.suite.of
-import kafka.suite.required
+import kafka.suite.*
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
@@ -24,7 +21,7 @@ class ReplaceNodeModule : RunnableModule {
         val topics = cli.get(t, emptySet()) { it.first().toString().split(",").toSet() }
 
         val brokers = kafkaAdminClient.brokers()
-        println("Moving all partition for ${if (topics.isEmpty()) "all" else topics.toString()} from " +
+        println("Moving all partitions for ${if (topics.isEmpty()) "all topics" else "topics $topics"} from " +
                 "node $replacing [${brokers.getValue(replacing).address}]  to node $substitution [${brokers.getValue(substitution).address}]")
 
         val strategy = ReplaceNodePartitionAssignmentStrategy(kafkaAdminClient, replacing, substitution, topics)

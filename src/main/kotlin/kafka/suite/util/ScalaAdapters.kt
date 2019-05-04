@@ -23,3 +23,4 @@ fun <V> Set<V>.asScalaSeq(): scala.collection.Seq<V> = this.asScala().toSeq()
 
 fun <V> V?.toScalaOption(): scala.Option<V> = scala.Option.apply(this)
 
+fun <V> scala.Option<V>.value(): V? = if (!this.isEmpty) this.get() else null

@@ -1,7 +1,8 @@
-package kafka.suite.module
+package kafka.suite.replacenode
 
 import kafka.suite.KafkaAdminClient
 import kafka.suite.KafkaPartitionAssignment
+import kafka.suite.PartitionAssignmentStrategy
 
 class ReplaceNodePartitionAssignmentStrategy(
         private val client: KafkaAdminClient,

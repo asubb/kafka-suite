@@ -1,6 +1,6 @@
-package kafka.suite.module
+package kafka.suite
 
-import kafka.suite.KafkaAdminClient
+import kafka.suite.replacenode.ReplaceNodeModule
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Options
 import kotlin.reflect.KClass

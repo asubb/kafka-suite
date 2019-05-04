@@ -1,7 +1,5 @@
 package kafka.suite
 
-import kafka.suite.module.Module
-import kafka.suite.module.RunnableModule
 import org.apache.commons.cli.*
 import java.io.PrintWriter
 import java.lang.System.exit
@@ -26,15 +24,21 @@ fun main(args: Array<String>) {
         val runnableModule = module?.getInstance()
         runnableModule?.getOptions()?.options?.forEach { options.addOption(it) }
 
-        val cli = DefaultParser().parse(options, args.copyOfRange(1, args.size))
-        val help = cli.get(h, false) { true }
+        val cli = try {
+            DefaultParser().parse(options, args.copyOfRange(1, args.size))
+        } catch (e: org.apache.commons.cli.MissingOptionException) {
+            null
+        } catch (e: MissingArgumentException) {
+            println(e.message)
+            null
+        }
+        val help = cli?.get(h, false) { true } ?: true
 
         when {
-            runnableModule == null -> printGeneralHelp(options)
+            runnableModule == null || cli == null -> printGeneralHelp(options)
             help -> printModuleHelp(runnableModule)
             else -> runModule(cli, b, z, d, w, runnableModule)
         }
-
     }
 }
 

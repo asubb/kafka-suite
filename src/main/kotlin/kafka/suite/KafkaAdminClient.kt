@@ -1,10 +1,7 @@
 package kafka.suite
 
 import kafka.admin.*
-import kafka.suite.util.asScala
-import kafka.suite.util.asScalaSeq
-import kafka.suite.util.fromScala
-import kafka.suite.util.toScalaOption
+import kafka.suite.util.*
 import kafka.zk.AdminZkClient
 import kafka.zk.KafkaZkClient
 import kafka.zookeeper.ZooKeeperClient
@@ -18,11 +15,7 @@ class KafkaAdminClient(
         val bootstrapServer: String,
         val zkConnectionString: String
 ) {
-    private val adminClient = AdminClient.create(
-            mapOf(
-                    "bootstrap.servers" to bootstrapServer
-            )
-    )
+    private val adminClient = AdminClient.create(mapOf("bootstrap.servers" to bootstrapServer))
 
     private val kafkaZkClient = KafkaZkClient(ZooKeeperClient(
             zkConnectionString,
@@ -56,7 +49,11 @@ class KafkaAdminClient(
     fun brokers(): Map<Int, KafkaBroker> {
         return fromScala(kafkaZkClient.allBrokersInCluster)
                 .map {
-                    it.id() to KafkaBroker(it.id(), fromScala(it.endPoints()).first().host(), it.rack().getOrElse(null))
+                    it.id() to KafkaBroker(
+                            it.id(),
+                            fromScala(it.endPoints()).first().host(),
+                            it.rack().value()
+                    )
                 }
                 .toMap()
     }
