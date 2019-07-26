@@ -20,7 +20,7 @@ import scala.collection.Seq
 class ScalaKafkaAdminClient(
         bootstrapServer: String,
         zkConnectionString: String
-) : kafka.suite.client.KafkaAdminClient {
+) : KafkaAdminClient {
     private val adminClient = AdminClient.create(mapOf("bootstrap.servers" to bootstrapServer))
 
     private val kafkaZkClient = KafkaZkClient(ZooKeeperClient(
@@ -46,7 +46,12 @@ class ScalaKafkaAdminClient(
                 .filter { limitToTopics.isEmpty() || it.key in limitToTopics }
                 .map { e ->
                     e.key!! to e.value!!.partitions().map {
-                        Partition(e.key, it.partition(), it.replicas().map { n -> n.id() })
+                        Partition(
+                                e.key,
+                                it.partition(),
+                                it.replicas().map { n -> n.id() },
+                                it.isr().map { n -> n.id() }
+                        )
                     }
                 }
                 .toMap()
@@ -75,7 +80,12 @@ class ScalaKafkaAdminClient(
                 .filter { limitToTopics.isEmpty() || it.key in limitToTopics }
                 .flatMap { e -> e.value.partitions().asSequence().map { e.key to it } }
                 .map { e ->
-                    Partition(e.first, e.second.partition(), e.second.replicas().map { it.id() })
+                    Partition(
+                            e.first,
+                            e.second.partition(),
+                            e.second.replicas().map { it.id() },
+                            e.second.isr().map { it.id() }
+                    )
                 }
                 .toList()
         return KafkaPartitionAssignment(version, partitions)

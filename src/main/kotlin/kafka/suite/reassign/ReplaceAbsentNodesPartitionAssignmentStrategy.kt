@@ -51,11 +51,11 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
                 plan.version,
                 plan.partitions
                         .filter { limitToTopics.isEmpty() || it.topic in limitToTopics }
-                        .filter { it.replicas.size < replicationFactors.getValue(it.topic) }
+                        .filter { it.inSyncReplicas.size < replicationFactors.getValue(it.topic) }
                         .map { p ->
                             val brokersLeft = brokers
                                     .map { it.id }
-                                    .filter { it !in p.replicas }
+                                    .filter { it !in p.inSyncReplicas }
                                     .toMutableSet()
 
                             fun bookNode(brokers: List<KafkaBroker>, forPartition: Partition): KafkaBroker {
@@ -66,7 +66,7 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
                             }
 
                             // these are the racks which is already covered, try to find the rest to cover, as each rack should have contain at least one replica
-                            val coveredRacks = p.replicas
+                            val coveredRacks = p.inSyncReplicas
                                     .map { r -> brokers.filter { it.id == r }.map { it.rack }.first() }
                                     .toSet()
                             val uncoveredRacks = racks - coveredRacks
@@ -82,7 +82,7 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
                                     .map { bookNode(brokers, p) }
 
                             p.copy(
-                                    replicas = p.replicas + (coverMoreRacks + spreadTheRest).map { it.id }
+                                    replicas = p.inSyncReplicas + (coverMoreRacks + spreadTheRest).map { it.id }
                             )
                         }
                         .toList()

@@ -11,10 +11,10 @@ object ReplaceAbsentNodesPartitionAssignmentStrategySpec : Spek({
 
     describe("4-node kafka cluster with one test topic, replication factor=2") {
         val healthy = KafkaPartitionAssignment(1, listOf(
-                Partition("test", 1, listOf(1, 2)),
-                Partition("test", 2, listOf(1, 3)),
-                Partition("test", 3, listOf(2, 3)),
-                Partition("test", 4, listOf(3, 4))
+                Partition("test", 1, listOf(1, 2), listOf(1, 2)),
+                Partition("test", 2, listOf(1, 3), listOf(1, 3)),
+                Partition("test", 3, listOf(2, 3), listOf(2, 3)),
+                Partition("test", 4, listOf(3, 4), listOf(3, 4))
         ))
 
 
@@ -23,7 +23,7 @@ object ReplaceAbsentNodesPartitionAssignmentStrategySpec : Spek({
             val client = TestKafkaAdminClient(
                     currentAssignmentFn = { _, version ->
                         KafkaPartitionAssignment(version, healthy.partitions.map { p ->
-                            p.copy(replicas = p.replicas.filter { it != 1 }) // emulate 1 node is down
+                            p.copy(inSyncReplicas= p.inSyncReplicas.filter { it != 1 }) // emulate 1 node is down
                         })
                     }
             )
@@ -63,7 +63,7 @@ object ReplaceAbsentNodesPartitionAssignmentStrategySpec : Spek({
             val client = TestKafkaAdminClient(
                     currentAssignmentFn = { _, version ->
                         KafkaPartitionAssignment(version, healthy.partitions.map { p ->
-                            p.copy(replicas = p.replicas.filter { it != 1 }) // emulate 1 node is down
+                            p.copy(inSyncReplicas = p.inSyncReplicas.filter { it != 1 }) // emulate 1 node is down
                         })
                     }
             )

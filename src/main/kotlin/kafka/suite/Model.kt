@@ -1,7 +1,5 @@
 package kafka.suite
 
-import javafx.scene.text.FontWeight
-
 data class TopicDesc(
         val replicationFactor: Int,
         val appxPartitionSize: Long?
@@ -10,7 +8,8 @@ data class TopicDesc(
 data class Partition(
         val topic: String,
         val partition: Int,
-        val replicas: List<Int>
+        val replicas: List<Int>,
+        val inSyncReplicas: List<Int>
 )
 
 data class KafkaPartitionAssignment(
