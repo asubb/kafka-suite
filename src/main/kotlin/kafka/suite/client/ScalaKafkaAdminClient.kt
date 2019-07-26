@@ -59,7 +59,7 @@ class ScalaKafkaAdminClient(
                     it.id() to KafkaBroker(
                             it.id(),
                             fromScala(it.endPoints()).first().host(),
-                            it.rack().value()
+                            it.rack().value() ?: "none"
                     )
                 }
                 .toMap()

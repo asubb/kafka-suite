@@ -1,4 +1,4 @@
-package kafka.suite
+package kafka.suite.reassign
 
 import kafka.suite.KafkaPartitionAssignment
 

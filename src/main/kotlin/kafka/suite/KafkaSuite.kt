@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
 
         val cli = try {
             DefaultParser().parse(options, args.copyOfRange(1, args.size))
-        } catch (e: org.apache.commons.cli.MissingOptionException) {
+        } catch (e: MissingOptionException) {
             null
         } catch (e: MissingArgumentException) {
             println(e.message)

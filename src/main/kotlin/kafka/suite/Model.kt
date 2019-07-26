@@ -1,5 +1,7 @@
 package kafka.suite
 
+import javafx.scene.text.FontWeight
+
 data class TopicDesc(
         val replicationFactor: Int,
         val appxPartitionSize: Long?
@@ -19,5 +21,5 @@ data class KafkaPartitionAssignment(
 data class KafkaBroker(
         val id: Int,
         val address: String,
-        val rack: String?
+        val rack: String
 )
