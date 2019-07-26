@@ -13,6 +13,7 @@ enum class Module(val key: String, private val clazz: KClass<out RunnableModule>
     REPLACE_NODE("replace-node", ReplaceNodeModule::class),
     REPLACE_ABSENT_NODE("replace-absent-node", ReplaceAbsentNodeModule::class),
     PROFILE("profile", ProfileModule::class),
+    INFO("info", InfoModule::class),
     ;
 
     val description: String

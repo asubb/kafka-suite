@@ -2,6 +2,7 @@
 *.class
 build/
 out/
+ksuite/
 
 # Log file
 *.log

@@ -22,7 +22,11 @@ fun main(args: Array<String>) {
         val runnableModule = module?.getInstance()
         runnableModule?.getOptions()?.options?.forEach { options.addOption(it) }
 
-        if (runnableModule != null && (args.size > 1 && args[1].trim() == "-h" || args.size == 1)) {
+        if (runnableModule != null && (
+                        args.size > 1 && args[1].trim() == "-h"
+                                || args.size == 1 && runnableModule.getOptions().options.any { it.isRequired }
+                        )
+        ) {
             printModuleHelp(runnableModule)
         } else {
             val cli = try {

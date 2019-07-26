@@ -16,7 +16,7 @@ class ProfileModule : RunnableModule {
 
     override fun module(): Module = Module.PROFILE
 
-    override fun getOptions(): Options = Options().of(n, z, b, r)
+    override fun getOptions(): Options = Options().of(n, z, b, r, k)
 
     override fun getDescription(): String = "Create or update the profile, as well as activate it."
 
