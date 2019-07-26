@@ -19,7 +19,8 @@ enum class Module(val key: String, private val clazz: KClass<out RunnableModule>
     fun getInstance(): RunnableModule = this.clazz.primaryConstructor!!.call()
 
     companion object {
-        fun byKey(key: String): Module? = values().first { it.key == key }
+        fun byKey(key: String): Module? = values().firstOrNull { it.key == key }
+                ?: throw IllegalArgumentException("Module $key is not recognized. Possible modules: ${values().joinToString { it.key }}")
     }
 }
 
