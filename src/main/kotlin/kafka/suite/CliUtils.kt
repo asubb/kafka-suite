@@ -28,3 +28,8 @@ fun Option.required(): Option {
     this.isRequired = true
     return this
 }
+
+fun CommandLine.ifHas(o: Option, body: (CommandLine) -> Unit) {
+    if (this.hasOption(o.opt))
+        body(this)
+}
