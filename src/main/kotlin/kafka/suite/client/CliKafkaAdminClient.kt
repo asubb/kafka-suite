@@ -25,7 +25,7 @@ class CliKafkaAdminClient(
                 .mapIndexed { i, topicName ->
                     println("Reading info about `$topicName` topic (${i + 1}/${topicNames().filter { limitToTopics.isEmpty() || it in limitToTopics }.size})")
                     val o = run("$kafkaWorkDir/kafka-topics.sh --zookeeper $zkConnectionString --describe --topic $topicName")
-                    val regex = Regex("\\s+Topic:\\s+([-_.\\w]+)\\s+Partition:\\s+([\\d]+).*Replicas:\\s+([,\\d]+).*Isr:\\s+([,\\d]+)")
+                    val regex = Regex("\\s+Topic:\\s+([-_.\\w]+)\\s+Partition:\\s+([\\d]+)\\s+Leader:\\s+([-\\d]+).*Replicas:\\s+([,\\d]+).*Isr:\\s+([,\\d]+)")
                     topicName to o
                             .filter { regex.matches(it) }
                             .map { e ->
@@ -33,9 +33,10 @@ class CliKafkaAdminClient(
                                         .map { m ->
                                             val topic = m.groupValues[1]
                                             val partition = m.groupValues[2].toInt()
-                                            val replicas = m.groupValues[3].split(",").map { it.trim().toInt() }
-                                            val isr = m.groupValues[4].split(",").map { it.trim().toInt() }
-                                            Partition(topic, partition, replicas, isr)
+                                            val leader = m.groupValues[3].toInt()
+                                            val replicas = m.groupValues[4].split(",").map { it.trim().toInt() }
+                                            val isr = m.groupValues[5].split(",").map { it.trim().toInt() }
+                                            Partition(topic, partition, replicas, isr, if (leader < 0) null else leader)
                                         }
                                         .toList()
                             }

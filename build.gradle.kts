@@ -41,6 +41,8 @@ dependencies {
 
     implementation("commons-cli:commons-cli:1.4")
 
+    implementation("io.github.microutils:kotlin-logging:1.7.2")
+    implementation("ch.qos.logback:logback-classic:1.2.3")
 
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Version.spek}")
     testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:${Version.spek}")

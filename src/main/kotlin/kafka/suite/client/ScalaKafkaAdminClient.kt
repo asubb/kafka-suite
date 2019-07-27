@@ -50,7 +50,8 @@ class ScalaKafkaAdminClient(
                                 e.key,
                                 it.partition(),
                                 it.replicas().map { n -> n.id() },
-                                it.isr().map { n -> n.id() }
+                                it.isr().map { n -> n.id() },
+                                it.leader()?.id()
                         )
                     }
                 }
@@ -84,7 +85,8 @@ class ScalaKafkaAdminClient(
                             e.first,
                             e.second.partition(),
                             e.second.replicas().map { it.id() },
-                            e.second.isr().map { it.id() }
+                            e.second.isr().map { it.id() },
+                            e.second.leader()?.id()
                     )
                 }
                 .toList()
