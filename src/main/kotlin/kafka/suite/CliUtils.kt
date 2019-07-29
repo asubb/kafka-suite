@@ -33,3 +33,7 @@ fun CommandLine.ifHas(o: Option, body: (CommandLine) -> Unit) {
     if (this.hasOption(o.opt))
         body(this)
 }
+
+fun CommandLine.has(o: Option): Boolean {
+    return this.hasOption(o.opt)
+}

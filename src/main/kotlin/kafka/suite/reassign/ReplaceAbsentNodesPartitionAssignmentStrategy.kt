@@ -20,17 +20,7 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
         val plan = client.currentAssignment(limitToTopics)
         logger.debug { "currentAssignment=$plan" }
 
-        val currentBrokerLoad = mutableMapOf(*brokers
-                .map { broker ->
-                    broker to
-                            plan.partitions
-                                    .filter { broker.id in it.replicas }
-                                    .map(weightFn)
-                                    .sum()
-                }.toTypedArray()
-        )
-        logger.debug { "currentBrokerLoad=$currentBrokerLoad" }
-
+        val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn, sortFn)
 
         val nodesByRack = brokers.groupBy { it.rack }
         logger.debug { "nodesByRack=$nodesByRack" }
@@ -42,18 +32,6 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
                 .map { it.key to it.value.maxBy { p -> p.replicas.size }!!.replicas.size }
                 .toMap()
         logger.debug { "replicationFactors=$replicationFactors" }
-
-        fun selectNode(nodes: Collection<KafkaBroker>, forPartition: Partition): KafkaBroker {
-            val brokerAndPartition = nodes
-                    .zip((0 until nodes.size).map { forPartition })
-                    .sortedWith(sortFn)
-                    .first()
-
-            val broker = brokerAndPartition.first
-            val currentLoad = currentBrokerLoad.getValue(broker)
-            currentBrokerLoad[broker] = currentLoad + weightFn(forPartition)
-            return broker
-        }
 
         return KafkaPartitionAssignment(
                 plan.version,
@@ -74,7 +52,7 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
 
                                 fun bookNode(brokers: List<KafkaBroker>, forPartition: Partition): KafkaBroker {
                                     if (brokersLeft.isEmpty()) throw IllegalStateException("No enough brokers to fulfil the replication factor")
-                                    val broker = selectNode(brokers.filter { it.id in brokersLeft }, forPartition)
+                                    val broker = brokerLoadTracker.selectNode(brokers.filter { it.id in brokersLeft }, forPartition)
                                     brokersLeft -= broker.id
                                     return broker
                                 }

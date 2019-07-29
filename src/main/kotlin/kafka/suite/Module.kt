@@ -1,6 +1,7 @@
 package kafka.suite
 
 import kafka.suite.client.KafkaAdminClient
+import kafka.suite.reassign.ChangeReplicationFactorModule
 import kafka.suite.reassign.ReplaceAbsentNodeModule
 import kafka.suite.reassign.ReplaceNodeModule
 import org.apache.commons.cli.CommandLine
@@ -14,6 +15,7 @@ enum class Module(val key: String, private val clazz: KClass<out RunnableModule>
     REPLACE_ABSENT_NODE("replace-absent-node", ReplaceAbsentNodeModule::class),
     PROFILE("profile", ProfileModule::class),
     INFO("info", InfoModule::class),
+    CHANGE_RF("change-replication-factor", ChangeReplicationFactorModule::class),
     ;
 
     val description: String

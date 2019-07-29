@@ -9,8 +9,8 @@ data class Partition(
         val topic: String,
         val partition: Int,
         val replicas: List<Int>,
-        val inSyncReplicas: List<Int>,
-        val leader: Int?
+        val inSyncReplicas: List<Int> = replicas,
+        val leader: Int? = null
 )
 
 data class KafkaPartitionAssignment(
