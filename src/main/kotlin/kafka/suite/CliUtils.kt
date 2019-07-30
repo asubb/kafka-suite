@@ -4,11 +4,11 @@ import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
 
-fun <T> CommandLine.getRequired(option: Option, converter: (List<*>) -> T): T {
-    return this.get(option = option, converter = converter, forcelyRequired = true)!!
+fun <T> CommandLine.getRequired(option: Option, converter: (String) -> T): T {
+    return this.get(option = option, converter = converter, forceToRequire = true)!!
 }
 
-fun <T> CommandLine.get(option: Option, forcelyRequired: Boolean = false, converter: (List<*>) -> T): T? {
+fun <T> CommandLine.get(option: Option, forceToRequire: Boolean = false, converter: (String) -> T): T? {
     val v = this.options
             .firstOrNull { it == option }
             ?.let {
@@ -16,10 +16,10 @@ fun <T> CommandLine.get(option: Option, forcelyRequired: Boolean = false, conver
                 if (option.hasArgs() && valuesList.isEmpty()) {
                     throw IllegalArgumentException("${option.argName} should have value")
                 } else {
-                    converter(valuesList)
+                    converter(valuesList.first().toString())
                 }
             }
-    return if ((option.isRequired || forcelyRequired) && v == null) {
+    return if ((option.isRequired || forceToRequire) && v == null) {
         throw IllegalArgumentException("`${option.longOpt ?: option.opt}` is not specified but required")
     } else {
         v

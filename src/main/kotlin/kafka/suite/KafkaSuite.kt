@@ -10,11 +10,10 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 
 private val d = Option("d", "dry-run", false, "Do not perform actually, just print out an intent. By default it runs really.")
-private val w = Option("w", "no-wait", false, "Do not wait for job to finish. By default it waits")
 private val h = Option("h", "help", false, "Shows general help, or if module specified shows module help")
 private val debug = Option(null, "debug", false, "Runs logger in debug mode")
 
-val options = Options().of(d, w, h, debug)
+val options = Options().of(d, h, debug)
 
 fun main(args: Array<String>) {
 
@@ -66,15 +65,14 @@ private fun runModule(cli: CommandLine, runnableModule: RunnableModule) {
             val bootstrapServer = profile.brokers
             val zkConnectionString = profile.zookeeper
             val kafkaCliPath = profile.kafkaBin
-            val dryRun = cli.get(d) { true } ?: false
-            val waitToFinish = cli.get(w) { false } ?: true
+            val dryRun = cli.has(d)
 
             val c = if (kafkaCliPath.isEmpty())
                 ScalaKafkaAdminClient(bootstrapServer, zkConnectionString)
             else
                 CliKafkaAdminClient(bootstrapServer, zkConnectionString, kafkaCliPath)
 
-            runnableModule.run(cli, c, dryRun, waitToFinish)
+            runnableModule.run(cli, c, dryRun)
         }
 
     } catch (e: IllegalArgumentException) {

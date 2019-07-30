@@ -1,5 +1,8 @@
 package kafka.suite.client
 
+import com.fasterxml.jackson.databind.node.*
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import kafka.admin.ReassignPartitionsCommand
 import kafka.admin.ReassignmentCompleted
 import kafka.admin.ReassignmentFailed
@@ -15,12 +18,16 @@ import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.TopicPartitionReplica
 import org.apache.kafka.common.utils.Time
+import org.apache.zookeeper.data.Stat
 import scala.collection.Seq
 
 class ScalaKafkaAdminClient(
         bootstrapServer: String,
         zkConnectionString: String
 ) : KafkaAdminClient {
+
+    private val mapper = jacksonObjectMapper().registerKotlinModule()
+
     private val adminClient = AdminClient.create(mapOf("bootstrap.servers" to bootstrapServer))
 
     private val kafkaZkClient = KafkaZkClient(ZooKeeperClient(
@@ -38,7 +45,7 @@ class ScalaKafkaAdminClient(
 
     override fun topics(limitToTopics: Set<String>): Map<String, List<Partition>> {
         val names = adminClient.listTopics().names().get()
-        val topics = adminClient
+        return adminClient
                 .describeTopics(names)
                 .all()
                 .get()
@@ -56,7 +63,6 @@ class ScalaKafkaAdminClient(
                     }
                 }
                 .toMap()
-        return topics
     }
 
     override fun brokers(): Map<Int, KafkaBroker> {
@@ -117,6 +123,36 @@ class ScalaKafkaAdminClient(
                 .entries
                 .all { it.value.status() in setOf(ReassignmentCompleted.status(), ReassignmentFailed.status()) }
 
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun currentReassignment(): KafkaPartitionAssignment? {
+        return KafkaPartitionAssignment(
+                1,
+                fromScala(kafkaZkClient.partitionReassignment)
+                        .map { (topicPartition, replicasSeq) ->
+                            Partition(topicPartition.topic(), topicPartition.partition(), fromScala(replicasSeq) as List<Int>)
+                            // TODO probably it's worth to enrich it with current ISR and Leader info
+                        }
+        )
+    }
+
+    override fun updatePartitionAssignment(topic: String, partition: Int, replicas: List<Int>, leader: Int) {
+        val path = "/brokers/topics/$topic/partitions/$partition/state"
+
+        val stat = Stat()
+        val data = kafkaZkClient
+                .currentZooKeeper()
+                .getData(path, null, stat)
+
+        val j = mapper.readTree(data) as ObjectNode
+        j["leader"] = IntNode(leader)
+        j["isr"] = ArrayNode(JsonNodeFactory.instance, replicas.map { IntNode(it) })
+
+        val newData = mapper.writeValueAsBytes(j)
+        kafkaZkClient
+                .currentZooKeeper()
+                .setData(path, newData, stat.version)
     }
 
     private fun createAssignmentPlan(plan: KafkaPartitionAssignment): scala.collection.Map<TopicPartition, Seq<Any>> {

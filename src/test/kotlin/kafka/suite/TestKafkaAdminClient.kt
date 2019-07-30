@@ -10,6 +10,11 @@ class TestKafkaAdminClient(
         val reassignPartitionsFn: (plan: KafkaPartitionAssignment) -> Boolean = { _ -> throw UnsupportedOperationException() },
         val isReassignmentFinishedFn: (plan: KafkaPartitionAssignment) -> Boolean = { _ -> throw UnsupportedOperationException() }
 ) : KafkaAdminClient {
+
+    override fun updatePartitionAssignment(topic: String, partition: Int, replicas: List<Int>, leader: Int) = throw UnsupportedOperationException()
+
+    override fun currentReassignment(): KafkaPartitionAssignment? = throw UnsupportedOperationException()
+
     override fun topics(limitToTopics: Set<String>): Map<String, List<Partition>> = topicsFn(limitToTopics)
 
     override fun brokers(): Map<Int, KafkaBroker> = brokersFn()

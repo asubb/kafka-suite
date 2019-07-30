@@ -17,7 +17,7 @@ class InfoModule : RunnableModule {
 
     override fun getDescription(): String = "Gets info about cluster"
 
-    override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean, waitToFinish: Boolean) {
+    override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean) {
         cli.ifHas(t) {
             val topics = cli.get(t) { it.first().toString().split(",").toSet() } ?: emptySet()
             val assignment = kafkaAdminClient.currentAssignment(topics)

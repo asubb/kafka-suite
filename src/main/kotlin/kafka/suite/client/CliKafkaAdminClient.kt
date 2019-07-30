@@ -55,6 +55,10 @@ class CliKafkaAdminClient(
 
     override fun isReassignmentFinished(plan: KafkaPartitionAssignment): Boolean = scalaClient.isReassignmentFinished(plan)
 
+    override fun currentReassignment(): KafkaPartitionAssignment? = scalaClient.currentReassignment()
+
+    override fun updatePartitionAssignment(topic: String, partition: Int, replicas: List<Int>, leader: Int) = scalaClient.updatePartitionAssignment(topic, partition, replicas, leader)
+
     private fun topicNames(): List<String> {
         return run("$kafkaWorkDir/kafka-topics.sh --zookeeper $zkConnectionString --list")
     }

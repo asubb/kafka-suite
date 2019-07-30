@@ -21,8 +21,8 @@ class ReplaceNodeModule : BaseReassignmentModule() {
 
         val brokers = kafkaAdminClient.brokers()
 
-        val replacing = cli.getRequired(r) { brokers.getValue(it.first().toString().toInt()) }
-        val substitution = cli.getRequired(s) { brokers.getValue(it.first().toString().toInt()) }
+        val replacing = cli.getRequired(r) { brokers.getValue(it.toInt()) }
+        val substitution = cli.getRequired(s) { brokers.getValue(it.toInt()) }
 
 
         return ReplaceNodePartitionAssignmentStrategy(

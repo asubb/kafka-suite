@@ -10,4 +10,6 @@ interface KafkaAdminClient {
     fun currentAssignment(limitToTopics: Set<String> = emptySet(), version: Int = 1): KafkaPartitionAssignment
     fun reassignPartitions(plan: KafkaPartitionAssignment): Boolean
     fun isReassignmentFinished(plan: KafkaPartitionAssignment): Boolean
+    fun currentReassignment(): KafkaPartitionAssignment?
+    fun updatePartitionAssignment(topic: String, partition: Int, replicas: List<Int>, leader: Int)
 }

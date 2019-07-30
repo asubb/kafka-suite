@@ -20,20 +20,20 @@ class ProfileModule : RunnableModule {
 
     override fun getDescription(): String = "Create or update the profile, as well as activate it."
 
-    override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean, waitToFinish: Boolean) {
+    override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean) {
         createProfile(cli)
     }
 
     fun createProfile(cli: CommandLine) {
-        val name = cli.getRequired(n) { it.first().toString() }
+        val name = cli.getRequired(n) { it }
 
         val profile = ClusterProfile.read(name)
 
         if (profile == null) {
-            val zooKeeper = cli.getRequired(z) { it.first().toString() }
-            val brokerList = cli.getRequired(b) { it.first().toString() }
+            val zooKeeper = cli.getRequired(z) { it }
+            val brokerList = cli.getRequired(b) { it }
             val userDefinedBrokerRack = cli.get(r) { parseBrokerRack(it) } ?: emptyMap()
-            val kafkaBin = cli.get(k) { it.first().toString() } ?: ""
+            val kafkaBin = cli.get(k) { it } ?: ""
 
             ClusterProfile(
                     name,
@@ -53,8 +53,8 @@ class ProfileModule : RunnableModule {
         }
     }
 
-    private fun parseBrokerRack(it: List<*>): Map<Int, String> {
-        return it.toString().split(",").asSequence()
+    private fun parseBrokerRack(arg: String): Map<Int, String> {
+        return arg.split(",").asSequence()
                 .map {
                     val (brokerId, rack) = it.split(":", limit = 2)
                     val key = brokerId.toInt()

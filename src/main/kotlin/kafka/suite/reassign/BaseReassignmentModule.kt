@@ -6,6 +6,7 @@ import mu.KotlinLogging
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
+import java.lang.IllegalStateException
 
 abstract class BaseReassignmentModule : RunnableModule {
 
@@ -15,8 +16,8 @@ abstract class BaseReassignmentModule : RunnableModule {
 
     override fun getOptions(): Options = Options().of(t, *getOptionList().toTypedArray())
 
-    override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean, waitToFinish: Boolean) {
-        val limitToTopics = cli.get(t) { it.first().toString().split(",").toSet() } ?: emptySet()
+    override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean) {
+        val limitToTopics = cli.get(t) { it.split(",").toSet() } ?: emptySet()
         val plan = kafkaAdminClient.currentAssignment(limitToTopics)
         logger.debug { "currentAssignment=$plan" }
 
@@ -46,20 +47,15 @@ abstract class BaseReassignmentModule : RunnableModule {
                     }
                 }
 
-        if (!dryRun) {
-            // TODO check if there is an assignment in progress
+        val currentReassignment = kafkaAdminClient.currentReassignment()
 
+        if (currentReassignment != null)
+            throw IllegalStateException("Can't start another reassignment. There is in progress one.")
+
+        if (!dryRun) {
             if (!kafkaAdminClient.reassignPartitions(newPlan)) {
                 println("ERROR: Can't reassign partitions")
                 return
-            }
-
-            if (waitToFinish) {
-                val start = System.currentTimeMillis()
-                while (!kafkaAdminClient.isReassignmentFinished(newPlan)) {
-                    println("Elapsed ${(System.currentTimeMillis() - start) / 1000.0f}s")
-                    Thread.sleep(10000)
-                }
             }
         }
     }

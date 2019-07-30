@@ -1,10 +1,7 @@
 package kafka.suite
 
 import kafka.suite.client.KafkaAdminClient
-import kafka.suite.reassign.ChangeReplicationFactorModule
-import kafka.suite.reassign.FixNoLeaderModule
-import kafka.suite.reassign.ReplaceAbsentNodeModule
-import kafka.suite.reassign.ReplaceNodeModule
+import kafka.suite.reassign.*
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Options
 import kotlin.reflect.KClass
@@ -18,6 +15,7 @@ enum class Module(val key: String, private val clazz: KClass<out RunnableModule>
     INFO("info", InfoModule::class),
     CHANGE_RF("change-replication-factor", ChangeReplicationFactorModule::class),
     FIX_NO_LEADER("fix-no-leader", FixNoLeaderModule::class),
+    REASSIGNMENT("reassignment", ReassignmentModule::class),
     ;
 
     val description: String
@@ -39,6 +37,6 @@ interface RunnableModule {
 
     fun getDescription(): String
 
-    fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean, waitToFinish: Boolean)
+    fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean)
 }
 

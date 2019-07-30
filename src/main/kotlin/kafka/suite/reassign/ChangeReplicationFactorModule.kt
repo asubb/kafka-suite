@@ -22,7 +22,7 @@ class ChangeReplicationFactorModule : BaseReassignmentModule() {
     override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment): PartitionAssignmentStrategy {
         val isrBased = cli.has(i)
         val skipNoLeader = cli.has(s)
-        val replicationFactor = cli.getRequired(r) { it.first().toString().toInt() }
+        val replicationFactor = cli.getRequired(r) { it.toInt() }
 
         val brokers = kafkaAdminClient.brokers()
 
