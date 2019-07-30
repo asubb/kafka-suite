@@ -4,19 +4,26 @@ import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
 
-fun <T> CommandLine.get(option: Option, default: T? = null, converter: (List<*>) -> T): T {
-    return this.options
+fun <T> CommandLine.getRequired(option: Option, converter: (List<*>) -> T): T {
+    return this.get(option = option, converter = converter, forcelyRequired = true)!!
+}
+
+fun <T> CommandLine.get(option: Option, forcelyRequired: Boolean = false, converter: (List<*>) -> T): T? {
+    val v = this.options
             .firstOrNull { it == option }
             ?.let {
                 val valuesList = it.valuesList
                 if (option.hasArgs() && valuesList.isEmpty()) {
-                    default ?: throw IllegalArgumentException("${option.argName} should have value")
+                    throw IllegalArgumentException("${option.argName} should have value")
                 } else {
                     converter(valuesList)
                 }
             }
-            ?: default
-            ?: throw IllegalArgumentException("`${option.longOpt ?: option.opt}` is not specified but required")
+    return if ((option.isRequired || forcelyRequired) && v == null) {
+        throw IllegalArgumentException("`${option.longOpt ?: option.opt}` is not specified but required")
+    } else {
+        v
+    }
 }
 
 fun Options.of(vararg o: Option): Options {

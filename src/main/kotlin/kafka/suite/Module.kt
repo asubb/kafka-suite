@@ -2,6 +2,7 @@ package kafka.suite
 
 import kafka.suite.client.KafkaAdminClient
 import kafka.suite.reassign.ChangeReplicationFactorModule
+import kafka.suite.reassign.FixNoLeaderModule
 import kafka.suite.reassign.ReplaceAbsentNodeModule
 import kafka.suite.reassign.ReplaceNodeModule
 import org.apache.commons.cli.CommandLine
@@ -16,6 +17,7 @@ enum class Module(val key: String, private val clazz: KClass<out RunnableModule>
     PROFILE("profile", ProfileModule::class),
     INFO("info", InfoModule::class),
     CHANGE_RF("change-replication-factor", ChangeReplicationFactorModule::class),
+    FIX_NO_LEADER("fix-no-leader", FixNoLeaderModule::class),
     ;
 
     val description: String

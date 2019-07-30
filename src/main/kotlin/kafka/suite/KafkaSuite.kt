@@ -58,8 +58,8 @@ private fun runModule(cli: CommandLine, runnableModule: RunnableModule) {
             val bootstrapServer = profile.brokers
             val zkConnectionString = profile.zookeeper
             val kafkaCliPath = profile.kafkaBin
-            val dryRun = cli.get(d, false) { true }
-            val waitToFinish = cli.get(w, true) { false }
+            val dryRun = cli.get(d) { true } ?: false
+            val waitToFinish = cli.get(w) { false } ?: true
 
             val c = if (kafkaCliPath.isEmpty())
                 ScalaKafkaAdminClient(bootstrapServer, zkConnectionString)

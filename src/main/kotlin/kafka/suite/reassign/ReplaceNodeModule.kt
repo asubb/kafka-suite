@@ -8,7 +8,7 @@ import org.apache.commons.cli.Options
 
 class ReplaceNodeModule : BaseReassignmentModule() {
     override fun getDescription(): String =
-            "moves partitions from one node to another"
+            "Moves partitions from one node to another. Node should be available"
 
     private val r = Option("r", "replacing", true, "Kafka node ID to replace.").required()
     private val s = Option("s", "substitution", true, "Substitution kafka node ID.").required()
@@ -20,9 +20,9 @@ class ReplaceNodeModule : BaseReassignmentModule() {
 
     override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient): PartitionAssignmentStrategy {
 
-        val replacing = cli.get(r) { it.first().toString().toInt() }
-        val substitution = cli.get(s) { it.first().toString().toInt() }
-        val topics = cli.get(t, emptySet()) { it.first().toString().split(",").toSet() }
+        val replacing = cli.getRequired(r) { it.first().toString().toInt() }
+        val substitution = cli.getRequired(s) { it.first().toString().toInt() }
+        val topics = cli.get(t) { it.first().toString().split(",").toSet() } ?: emptySet()
 
         val brokers = kafkaAdminClient.brokers()
         println("Moving all partitions for ${if (topics.isEmpty()) "all topics" else "topics $topics"} from " +

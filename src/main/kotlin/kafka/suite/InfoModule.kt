@@ -19,7 +19,7 @@ class InfoModule : RunnableModule {
 
     override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean, waitToFinish: Boolean) {
         cli.ifHas(t) {
-            val topics = cli.get(t, emptySet()) { it.first().toString().split(",").toSet() }
+            val topics = cli.get(t) { it.first().toString().split(",").toSet() } ?: emptySet()
             val assignment = kafkaAdminClient.currentAssignment(topics)
             println("Assignment: $assignment")
         }

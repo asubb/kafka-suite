@@ -25,15 +25,15 @@ class ProfileModule : RunnableModule {
     }
 
     fun createProfile(cli: CommandLine) {
-        val name = cli.get(n) { it.first().toString() }
+        val name = cli.getRequired(n) { it.first().toString() }
 
         val profile = ClusterProfile.read(name)
 
         if (profile == null) {
-            val zooKeeper = cli.get(z) { it.first().toString() }
-            val brokerList = cli.get(b) { it.first().toString() }
-            val userDefinedBrokerRack = cli.get(r, emptyMap()) { parseBrokerRack(it) }
-            val kafkaBin = cli.get(k, "") { it.first().toString() }
+            val zooKeeper = cli.getRequired(z) { it.first().toString() }
+            val brokerList = cli.getRequired(b) { it.first().toString() }
+            val userDefinedBrokerRack = cli.get(r) { parseBrokerRack(it) } ?: emptyMap()
+            val kafkaBin = cli.get(k) { it.first().toString() } ?: ""
 
             ClusterProfile(
                     name,
@@ -45,10 +45,10 @@ class ProfileModule : RunnableModule {
             ).save()
         } else {
             var p = profile.copy(active = true)
-            cli.ifHas(z) { p = cli.get(z) { p.copy(zookeeper = it.first().toString()) } }
-            cli.ifHas(b) { p = cli.get(b) { p.copy(brokers = it.first().toString()) } }
-            cli.ifHas(r) { p = cli.get(r) { p.copy(racks = parseBrokerRack(it)) } }
-            cli.ifHas(k) { p = cli.get(k) { p.copy(kafkaBin = it.first().toString()) } }
+            cli.ifHas(z) { p = cli.getRequired(z) { p.copy(zookeeper = it.first().toString()) } }
+            cli.ifHas(b) { p = cli.getRequired(b) { p.copy(brokers = it.first().toString()) } }
+            cli.ifHas(r) { p = cli.getRequired(r) { p.copy(racks = parseBrokerRack(it)) } }
+            cli.ifHas(k) { p = cli.getRequired(k) { p.copy(kafkaBin = it.first().toString()) } }
             p.save()
         }
     }

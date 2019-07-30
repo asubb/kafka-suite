@@ -19,7 +19,7 @@ class ReplaceAbsentNodeModule : BaseReassignmentModule() {
     override fun getOptions(): Options = Options().of(t)
 
     override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient): PartitionAssignmentStrategy {
-        val topics = cli.get(t, emptySet()) { it.first().toString().split(",").toSet() }
+        val topics = cli.get(t) { it.first().toString().split(",").toSet() } ?: emptySet()
 
         val brokers = kafkaAdminClient.brokers()
 

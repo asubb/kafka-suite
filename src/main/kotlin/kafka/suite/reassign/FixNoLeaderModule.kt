@@ -7,25 +7,21 @@ import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
 import java.util.*
 
-class ChangeReplicationFactorModule : BaseReassignmentModule() {
+class FixNoLeaderModule : BaseReassignmentModule() {
     override fun getDescription(): String =
-            "Changes replication factor of topics"
+            "Fixes no leader on under replicated partition by assigning it to a different broker keeping the same replication factor or overriding with another one"
 
 
     private val t = Option("t", "topics", true, "Comma-separated list of topics to include, if not specified all topics will be included.")
-    private val r = Option("r", "replication-factor", true, "Replication factor to set.").required()
-    private val i = Option("i", "isr-based", false, "Use in-sync replicas instead of replicas as a current state.")
-    private val s = Option("s", "skip-no-leader", false, "If some partitions need to be skipped during decreasing replication factor, this flag should be specified")
+    private val r = Option("r", "replication-factor", true, "Replication factor to set.")
 
-    override fun module(): Module = Module.CHANGE_RF
+    override fun module(): Module = Module.FIX_NO_LEADER
 
-    override fun getOptions(): Options = Options().of(t, r, i, s)
+    override fun getOptions(): Options = Options().of(t, r)
 
     override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient): PartitionAssignmentStrategy {
         val topics = cli.get(t) { it.first().toString().split(",").toSet() } ?: emptySet()
-        val isrBased = cli.has(i)
-        val skipNoLeader = cli.has(s)
-        val replicationFactor = cli.getRequired(r) { it.first().toString().toInt() }
+        val replicationFactor = cli.get(r) { it.first().toString().toInt() }
 
         val brokers = kafkaAdminClient.brokers()
 
@@ -42,15 +38,13 @@ class ChangeReplicationFactorModule : BaseReassignmentModule() {
 
         }
 
-        return ChangeReplicationFactorPartitionAssignmentStrategy(
-                isrBased,
-                replicationFactor,
+        return FixNoLeaderPartitionAssignmentStrategy(
                 kafkaAdminClient,
                 topics,
                 brokers.values.toList(),
                 weightFn,
                 sortFn,
-                skipNoLeader
+                replicationFactor
         )
     }
 
