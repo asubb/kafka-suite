@@ -19,28 +19,32 @@ abstract class BaseReassignmentModule : RunnableModule {
         val limitToTopics = cli.get(t) { it.first().toString().split(",").toSet() } ?: emptySet()
         val plan = kafkaAdminClient.currentAssignment(limitToTopics)
         logger.debug { "currentAssignment=$plan" }
-        val oldReplicasByPartitionAndTopic = plan.partitions
-                .map { p -> p.partition to p.topic to p.replicas }
-                .toMap()
-
 
         val strategy = getStrategy(cli, kafkaAdminClient, plan)
         val newPlan = strategy.newPlan()
 
         logger.debug { "newPlan=$newPlan" }
         println("New assigment plan:")
-        val byTopic = newPlan.partitions.groupBy { it.topic }
-        byTopic.forEach { (topic, partitions) ->
-            println("Topic: $topic")
-            partitions.forEach { p ->
-                println(String.format(
-                        "\t%3s [%s]->[%s]",
-                        p.partition,
-                        oldReplicasByPartitionAndTopic.getValue(Pair(p.partition, topic)).joinToString(),
-                        p.replicas.joinToString()
-                ))
-            }
-        }
+        val replicasByPartitionAndTopic = newPlan.partitions
+                .map { p -> p.partition to p.topic to p.replicas }
+                .toMap()
+
+        plan.partitions
+                .groupBy { it.topic }
+                .forEach { (topic, partitions) ->
+                    println("Topic: $topic")
+                    partitions.forEach { p ->
+                        val newReplicas = replicasByPartitionAndTopic[Pair(p.partition, topic)]
+                        println(String.format(
+                                "%1s\t%3s [%s]->[%s] -- %s",
+                                if (newReplicas == null) "X" else " ",
+                                p.partition,
+                                p.replicas.joinToString(),
+                                newReplicas?.joinToString() ?: "<untouched>",
+                                "ISR: ${p.inSyncReplicas.joinToString()} Leader: ${p.leader ?: "none"}"
+                        ))
+                    }
+                }
 
         if (!dryRun) {
             // TODO check if there is an assignment in progress
