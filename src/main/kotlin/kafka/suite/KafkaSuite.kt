@@ -5,12 +5,16 @@ import kafka.suite.client.ScalaKafkaAdminClient
 import org.apache.commons.cli.*
 import java.io.PrintWriter
 import java.lang.System.exit
+import org.slf4j.LoggerFactory
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
 
 private val d = Option("d", "dry-run", false, "Do not perform actually, just print out an intent. By default it runs really.")
 private val w = Option("w", "no-wait", false, "Do not wait for job to finish. By default it waits")
 private val h = Option("h", "help", false, "Shows general help, or if module specified shows module help")
+private val debug = Option(null, "debug", false, "Runs logger in debug mode")
 
-val options = Options().of(d, w, h)
+val options = Options().of(d, w, h, debug)
 
 fun main(args: Array<String>) {
 
@@ -37,6 +41,10 @@ fun main(args: Array<String>) {
             } catch (e: MissingArgumentException) {
                 println(e.message)
                 null
+            }
+            cli?.ifHas(debug) {
+                val root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
+                root.level = Level.DEBUG
             }
             when {
                 runnableModule == null && cli == null -> printGeneralHelp()

@@ -37,7 +37,7 @@ fun Option.required(): Option {
 }
 
 fun CommandLine.ifHas(o: Option, body: (CommandLine) -> Unit) {
-    if (this.hasOption(o.opt))
+    if (this.hasOption(o.opt ?: o.longOpt))
         body(this)
 }
 
