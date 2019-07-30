@@ -27,10 +27,10 @@ object ReplaceAbsentNodesPartitionAssignmentStrategySpec : Spek({
                         })
                     }
             )
+            val plan = client.currentAssignment()
 
             val strategy = ReplaceAbsentNodesPartitionAssignmentStrategy(
-                    client,
-                    emptySet(),
+                    plan,
                     listOf(
                             KafkaBroker(2, "127.0.0.2", "1"),
                             KafkaBroker(3, "127.0.0.3", "2"),
@@ -67,10 +67,10 @@ object ReplaceAbsentNodesPartitionAssignmentStrategySpec : Spek({
                         })
                     }
             )
+            val plan = client.currentAssignment()
 
             val strategy = ReplaceAbsentNodesPartitionAssignmentStrategy(
-                    client,
-                    emptySet(),
+                    plan,
                     listOf(
                             KafkaBroker(2, "127.0.0.2", "none"),
                             KafkaBroker(3, "127.0.0.3", "none"),
@@ -101,7 +101,7 @@ object ReplaceAbsentNodesPartitionAssignmentStrategySpec : Spek({
         describe("For one of the partitions both nodes are down and no leader") {
 
             val client = TestKafkaAdminClient(
-                    currentAssignmentFn = { _, version ->
+                    currentAssignmentFn = { _, _ ->
                         // 1 and 2 nodes are down
                         KafkaPartitionAssignment(1, listOf(
                                 // this is how it looks on 0.10.2 if partition completely lost
@@ -112,10 +112,10 @@ object ReplaceAbsentNodesPartitionAssignmentStrategySpec : Spek({
                         ))
                     }
             )
+            val plan = client.currentAssignment()
 
             val strategy = ReplaceAbsentNodesPartitionAssignmentStrategy(
-                    client,
-                    emptySet(),
+                    plan,
                     listOf(
                             KafkaBroker(3, "127.0.0.3", "2"),
                             KafkaBroker(4, "127.0.0.4", "2")

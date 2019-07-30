@@ -24,11 +24,11 @@ class FixNoLeaderPartitionAssignmentStrategySpec : Spek({
                     Partition("test", 4, listOf(1, 3), listOf(1), 1)
             ))
         })
+        val plan = client.currentAssignment()
 
 
         val strategy = FixNoLeaderPartitionAssignmentStrategy(
-                client,
-                emptySet(),
+                plan,
                 brokers,
                 { 1 }, // all partitions are the same
                 Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -62,11 +62,11 @@ class FixNoLeaderPartitionAssignmentStrategySpec : Spek({
                     Partition("test", 4, listOf(1, 4), listOf(1), 1)
             ))
         })
+        val plan = client.currentAssignment()
 
 
         val strategy = FixNoLeaderPartitionAssignmentStrategy(
-                client,
-                emptySet(),
+                plan,
                 brokers,
                 { 1 }, // all partitions are the same
                 Comparator { _, _ -> 0 } // evenly balanced doesn't matter now

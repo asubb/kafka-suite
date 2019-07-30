@@ -7,8 +7,7 @@ import kafka.suite.client.KafkaAdminClient
 import mu.KotlinLogging
 
 class FixNoLeaderPartitionAssignmentStrategy(
-        private val client: KafkaAdminClient,
-        private val limitToTopics: Set<String>,
+        private val plan: KafkaPartitionAssignment,
         private val brokers: List<KafkaBroker>,
         private val weightFn: (Partition) -> Int,
         private val sortFn: Comparator<Pair<KafkaBroker, Partition>>,
@@ -21,14 +20,10 @@ class FixNoLeaderPartitionAssignmentStrategy(
         logger.debug {
             """
             FixNoLeaderPartitionAssignmentStrategy(
-                limitToTopics=$limitToTopics
                 brokers=$brokers
             )
         """.trimIndent()
         }
-
-        val plan = client.currentAssignment(limitToTopics)
-        logger.debug { "currentAssignment=$plan" }
 
         val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn, sortFn)
 

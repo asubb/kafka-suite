@@ -20,12 +20,12 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
         describe("Decreasing replication factor to 1") {
 
             val client = TestKafkaAdminClient(currentAssignmentFn = { _, _ -> healthy })
+            val plan = client.currentAssignment()
 
             val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                    plan,
                     false,
                     1,
-                    client,
-                    emptySet(),
                     brokers(4, 1),
                     { 1 }, // all partitions are the same
                     Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -47,12 +47,12 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
         describe("Decreasing replication factor to 2, rack unaware") {
 
             val client = TestKafkaAdminClient(currentAssignmentFn = { _, _ -> healthy })
+            val plan = client.currentAssignment()
 
             val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                    plan,
                     false,
                     2,
-                    client,
-                    emptySet(),
                     brokers(4, 1),
                     { 1 }, // all partitions are the same
                     Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -74,16 +74,16 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
         describe("Decreasing replication factor to 2, 2 racks") {
 
             val client = TestKafkaAdminClient(currentAssignmentFn = { _, _ -> healthy })
+            val plan = client.currentAssignment()
 
             val brokers = brokers(4, 2)
 
             val brokerById = brokers.map { it.id to it }.toMap()
 
             val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                    plan,
                     false,
                     2,
-                    client,
-                    emptySet(),
                     brokers,
                     { 1 }, // all partitions are the same
                     Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -116,12 +116,12 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
         describe("Increase replication factor to 4, rack unaware") {
 
             val client = TestKafkaAdminClient(currentAssignmentFn = { _, _ -> healthy })
+            val plan = client.currentAssignment()
 
             val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                    plan,
                     false,
                     2,
-                    client,
-                    emptySet(),
                     brokers(4, 1),
                     { 1 }, // all partitions are the same
                     Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -147,12 +147,12 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
             val brokerById = brokers.map { it.id to it }.toMap()
 
             val client = TestKafkaAdminClient(currentAssignmentFn = { _, _ -> healthy })
+            val plan = client.currentAssignment()
 
             val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                    plan,
                     false,
                     4,
-                    client,
-                    emptySet(),
                     brokers,
                     { 1 }, // all partitions are the same
                     Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -198,12 +198,12 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     Partition("test", 4, listOf(1), listOf(1), 1)
             ))
         })
+        val plan = client.currentAssignment()
 
         val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                plan,
                 false,
                 4,
-                client,
-                emptySet(),
                 brokers,
                 { 1 }, // all partitions are the same
                 Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -249,12 +249,12 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     Partition("test", 6, listOf(3, 1, 2), leader = 3)
             ))
         })
+        val plan = client.currentAssignment()
 
         val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                plan,
                 false,
                 2,
-                client,
-                emptySet(),
                 brokers,
                 { 1 }, // all partitions are the same
                 Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -299,12 +299,12 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     Partition("test", 6, listOf(3, 1, 2), listOf(1, 3), leader = 1)
             ))
         })
+        val plan = client.currentAssignment()
 
         val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                plan,
                 true,
                 1,
-                client,
-                emptySet(),
                 brokers,
                 { 1 }, // all partitions are the same
                 Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -335,12 +335,13 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     Partition("test", 6, listOf(3, 1, 2), listOf(1), 1)
             ))
         })
+        val plan = client.currentAssignment()
+
 
         val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                plan,
                 true,
                 1,
-                client,
-                emptySet(),
                 brokers,
                 { 1 }, // all partitions are the same
                 Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
@@ -369,12 +370,12 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     Partition("test", 6, listOf(3, 1, 2), listOf(1), 1)
             ))
         })
+        val plan = client.currentAssignment()
 
         val strategy = ChangeReplicationFactorPartitionAssignmentStrategy(
+                plan,
                 true,
                 1,
-                client,
-                emptySet(),
                 brokers,
                 { 1 }, // all partitions are the same
                 Comparator { _, _ -> 0 }, // evenly balanced doesn't matter now

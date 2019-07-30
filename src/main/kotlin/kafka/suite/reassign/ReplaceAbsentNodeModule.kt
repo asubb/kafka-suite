@@ -11,15 +11,11 @@ class ReplaceAbsentNodeModule : BaseReassignmentModule() {
     override fun getDescription(): String =
             "find the new home for under-replicated partitions if the node(s) disappeared. Automatically detects the replication factor based on current state and missed node"
 
-
-    private val t = Option("t", "topics", true, "Comma-separated list of topics to include, if not specified all topics will be included.")
-
     override fun module(): Module = Module.REPLACE_ABSENT_NODE
 
-    override fun getOptions(): Options = Options().of(t)
+    override fun getOptionList(): List<Option> = emptyList()
 
-    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient): PartitionAssignmentStrategy {
-        val topics = cli.get(t) { it.first().toString().split(",").toSet() } ?: emptySet()
+    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment): PartitionAssignmentStrategy {
 
         val brokers = kafkaAdminClient.brokers()
 
@@ -37,8 +33,7 @@ class ReplaceAbsentNodeModule : BaseReassignmentModule() {
         }
 
         return ReplaceAbsentNodesPartitionAssignmentStrategy(
-                kafkaAdminClient,
-                topics,
+                plan,
                 brokers.values.toList(),
                 weightFn,
                 sortFn

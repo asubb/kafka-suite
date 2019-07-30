@@ -1,14 +1,12 @@
 package kafka.suite.reassign
 
-import kafka.suite.*
-import kafka.suite.client.KafkaAdminClient
+import kafka.suite.KafkaBroker
+import kafka.suite.KafkaPartitionAssignment
+import kafka.suite.Partition
 import mu.KotlinLogging
-import java.lang.Exception
-import java.lang.IllegalStateException
 
 class ReplaceAbsentNodesPartitionAssignmentStrategy(
-        private val client: KafkaAdminClient,
-        private val limitToTopics: Set<String>,
+        private val plan: KafkaPartitionAssignment,
         private val brokers: List<KafkaBroker>,
         private val weightFn: (Partition) -> Int,
         private val sortFn: Comparator<Pair<KafkaBroker, Partition>>
@@ -17,8 +15,6 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
     private val logger = KotlinLogging.logger {}
 
     override fun newPlan(): KafkaPartitionAssignment {
-        val plan = client.currentAssignment(limitToTopics)
-        logger.debug { "currentAssignment=$plan" }
 
         val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn, sortFn)
 
@@ -28,7 +24,6 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
         logger.debug { "racks=$racks" }
         val replicationFactors = plan.partitions.asSequence()
                 .groupBy { it.topic }
-                .filter { limitToTopics.isEmpty() || it.key in limitToTopics }
                 .map { it.key to it.value.maxBy { p -> p.replicas.size }!!.replicas.size }
                 .toMap()
         logger.debug { "replicationFactors=$replicationFactors" }
@@ -36,7 +31,6 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
         return KafkaPartitionAssignment(
                 plan.version,
                 plan.partitions
-                        .filter { limitToTopics.isEmpty() || it.topic in limitToTopics }
                         .filter { it.inSyncReplicas.size < replicationFactors.getValue(it.topic) }
                         .map { p ->
                             logger.debug { "Partition $p" }

@@ -3,14 +3,12 @@ package kafka.suite.reassign
 import kafka.suite.KafkaBroker
 import kafka.suite.KafkaPartitionAssignment
 import kafka.suite.Partition
-import kafka.suite.client.KafkaAdminClient
 import mu.KotlinLogging
 
 class ChangeReplicationFactorPartitionAssignmentStrategy(
+        private val plan: KafkaPartitionAssignment,
         private val isrBased: Boolean,
         private val replicationFactor: Int,
-        private val client: KafkaAdminClient,
-        private val limitToTopics: Set<String>,
         private val brokers: List<KafkaBroker>,
         private val weightFn: (Partition) -> Int,
         private val sortFn: Comparator<Pair<KafkaBroker, Partition>>,
@@ -25,14 +23,10 @@ class ChangeReplicationFactorPartitionAssignmentStrategy(
             ChangeReplicationFactorPartitionAssignmentStrategy(
                 isrBased=$isrBased
                 replicationFactor=$replicationFactor
-                limitToTopics=$limitToTopics
                 brokers=$brokers
             )
         """.trimIndent()
         }
-
-        val plan = client.currentAssignment(limitToTopics)
-        logger.debug { "currentAssignment=$plan" }
 
         val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn, sortFn)
 
