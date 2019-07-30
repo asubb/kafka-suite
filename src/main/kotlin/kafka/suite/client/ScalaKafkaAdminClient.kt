@@ -127,13 +127,17 @@ class ScalaKafkaAdminClient(
 
     @Suppress("UNCHECKED_CAST")
     override fun currentReassignment(): KafkaPartitionAssignment? {
-        return KafkaPartitionAssignment(
-                1,
-                fromScala(kafkaZkClient.partitionReassignment)
-                        .map { (topicPartition, replicasSeq) ->
-                            Partition(topicPartition.topic(), topicPartition.partition(), fromScala(replicasSeq) as List<Int>)
-                            // TODO probably it's worth to enrich it with current ISR and Leader info
-                        }
+        val partitions = fromScala(kafkaZkClient.partitionReassignment)
+                .map { (topicPartition, replicasSeq) ->
+                    Partition(topicPartition.topic(), topicPartition.partition(), fromScala(replicasSeq) as List<Int>)
+                    // TODO probably it's worth to enrich it with current ISR and Leader info
+                }
+        return if (partitions.isEmpty())
+            null
+        else
+            KafkaPartitionAssignment(
+                    1,
+                    partitions
         )
     }
 
