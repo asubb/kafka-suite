@@ -8,12 +8,11 @@ import org.apache.commons.cli.Options
 
 class ReassignmentModule : RunnableModule {
 
-    private val f = Option("f", "force", true, """
-        Forces assignment of partition -- basically tells cluster that reassigning is finished. 
-        Fixes cases when kafka reassignment stuck, i.e. for 0.10.2 when there is no leader on partition -- it never finishes.
-        USE WITH CAUTION! If you need to use it the data on partition is completely lost.
-        Syntax: topic1:2:3:4,topic2:1 -- force reassignment for topic `topic` partitions 2,3,4 and `topic2` partition 1. 
-    """.trimIndent())
+    private val f = Option("f", "force", true, "Forces assignment of partition -- basically tells cluster that reassigning is finished. " +
+            "Fixes cases when kafka reassignment stuck, i.e. for 0.10.2 when there is no leader on partition -- it never finishes. \n" +
+            "USE WITH CAUTION! If you need to use it the data on partition is completely lost. Also keep an eye on kafka controller logs, " +
+            "some brokers may file because of such assignments, you would need to restart or even clean some partitions on broker manually. Follow the logs. \n" +
+            "Syntax: topic1:2:3:4,topic2:1 -- force reassignment for topic `topic` partitions 2,3,4 and `topic2` partition 1.")
 
     private val w = Option("w", "wait", true, "Waits current reassignment to finish. " +
             "If -q flag specified doesn't output anything. As a parameter specify period of checking in seconds")
@@ -100,11 +99,10 @@ class ReassignmentModule : RunnableModule {
                     partitions.forEach { p ->
                         val current = currentReplicasStateByPartitionAndTopic.getValue(Pair(p.partition, topic))
                         println(String.format(
-                                "\t%3s [%s]->[%s] -- %s",
+                                "\t%3s [%s]->[%s]",
                                 p.partition,
                                 current.joinToString(),
-                                p.replicas.joinToString(),
-                                "ISR: ${p.inSyncReplicas.joinToString()} Leader: ${p.leader ?: "none"}"
+                                p.replicas.joinToString()
                         ))
                     }
                 }

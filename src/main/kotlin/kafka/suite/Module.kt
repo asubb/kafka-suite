@@ -16,6 +16,7 @@ enum class Module(val key: String, private val clazz: KClass<out RunnableModule>
     CHANGE_RF("change-replication-factor", ChangeReplicationFactorModule::class),
     FIX_NO_LEADER("fix-no-leader", FixNoLeaderModule::class),
     REASSIGNMENT("reassignment", ReassignmentModule::class),
+    ANALYZE("analyze", AnalyzeModule::class),
     ;
 
     val description: String
