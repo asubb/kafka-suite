@@ -4,7 +4,6 @@ import kafka.suite.*
 import kafka.suite.client.KafkaAdminClient
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
-import org.apache.commons.cli.Options
 
 class ReplaceNodeModule : BaseReassignmentModule() {
     override fun getDescription(): String =
@@ -17,7 +16,7 @@ class ReplaceNodeModule : BaseReassignmentModule() {
 
     override fun getOptionList(): List<Option> = listOf(r, s)
 
-    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment): PartitionAssignmentStrategy {
+    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn): PartitionAssignmentStrategy {
 
         val brokers = kafkaAdminClient.brokers()
 

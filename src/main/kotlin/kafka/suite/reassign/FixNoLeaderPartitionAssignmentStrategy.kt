@@ -9,8 +9,7 @@ import mu.KotlinLogging
 class FixNoLeaderPartitionAssignmentStrategy(
         private val plan: KafkaPartitionAssignment,
         private val brokers: List<KafkaBroker>,
-        private val weightFn: (Partition) -> Int,
-        private val sortFn: Comparator<Pair<KafkaBroker, Partition>>,
+        private val weightFn: WeightFn,
         private val newReplicationFactor: Int? = null
 ) : PartitionAssignmentStrategy {
 
@@ -25,7 +24,7 @@ class FixNoLeaderPartitionAssignmentStrategy(
         """.trimIndent()
         }
 
-        val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn, sortFn)
+        val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn)
 
         val nodesByRack = brokers.groupBy { it.rack }
 

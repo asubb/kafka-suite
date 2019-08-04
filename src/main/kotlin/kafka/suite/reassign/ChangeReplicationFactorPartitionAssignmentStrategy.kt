@@ -2,7 +2,6 @@ package kafka.suite.reassign
 
 import kafka.suite.KafkaBroker
 import kafka.suite.KafkaPartitionAssignment
-import kafka.suite.Partition
 import mu.KotlinLogging
 
 class ChangeReplicationFactorPartitionAssignmentStrategy(
@@ -10,8 +9,7 @@ class ChangeReplicationFactorPartitionAssignmentStrategy(
         private val isrBased: Boolean,
         private val replicationFactor: Int,
         private val brokers: List<KafkaBroker>,
-        private val weightFn: (Partition) -> Int,
-        private val sortFn: Comparator<Pair<KafkaBroker, Partition>>,
+        private val weightFn: WeightFn,
         private val skipNoLeader: Boolean = false
 ) : PartitionAssignmentStrategy {
 
@@ -28,7 +26,7 @@ class ChangeReplicationFactorPartitionAssignmentStrategy(
         """.trimIndent()
         }
 
-        val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn, sortFn)
+        val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn)
 
         val nodesByRack = brokers.groupBy { it.rack }
 

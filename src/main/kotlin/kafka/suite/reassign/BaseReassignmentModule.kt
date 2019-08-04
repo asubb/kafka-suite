@@ -13,15 +13,18 @@ abstract class BaseReassignmentModule : RunnableModule {
     private val logger = KotlinLogging.logger {}
 
     private val t = Option("t", "topics", true, "Comma-separated list of topics to include, if not specified all topics will be included.")
+    private val w = Option("w", "weightFn", true, "The name of the weight function: " + WeightFns.values().joinToString { it.id } + ".")
 
     override fun getOptions(): Options = Options().of(t, *getOptionList().toTypedArray())
 
     override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean) {
         val limitToTopics = cli.get(t) { it.split(",").toSet() } ?: emptySet()
         val plan = kafkaAdminClient.currentAssignment(limitToTopics)
+        val weightFn = ProfileBasedWeightFn() // cli.get(w) { w -> WeightFns.values().filter { it.id == w }.map { TODO() } }?: ProfileBasedWeightFn()
+
         logger.debug { "currentAssignment=$plan" }
 
-        val strategy = getStrategy(cli, kafkaAdminClient, plan)
+        val strategy = getStrategy(cli, kafkaAdminClient, plan, weightFn)
         val newPlan = strategy.newPlan()
 
         logger.debug { "newPlan=$newPlan" }
@@ -60,7 +63,7 @@ abstract class BaseReassignmentModule : RunnableModule {
         }
     }
 
-    protected abstract fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment): PartitionAssignmentStrategy
+    protected abstract fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn): PartitionAssignmentStrategy
 
     protected abstract fun getOptionList(): List<Option>
 }

@@ -4,8 +4,6 @@ import kafka.suite.*
 import kafka.suite.client.KafkaAdminClient
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
-import org.apache.commons.cli.Options
-import java.util.*
 
 class ChangeReplicationFactorModule : BaseReassignmentModule() {
     override fun getDescription(): String =
@@ -19,25 +17,12 @@ class ChangeReplicationFactorModule : BaseReassignmentModule() {
 
     override fun getOptionList(): List<Option> = listOf(r, i, s)
 
-    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment): PartitionAssignmentStrategy {
+    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn): PartitionAssignmentStrategy {
         val isrBased = cli.has(i)
         val skipNoLeader = cli.has(s)
         val replicationFactor = cli.getRequired(r) { it.toInt() }
 
         val brokers = kafkaAdminClient.brokers()
-
-        val weightFn: (Partition) -> Int = { 1 } // TODO collect/load/generate stats
-
-        val sortFn = object : Comparator<Pair<KafkaBroker, Partition>> {
-
-            private val r = Random() // TODO that should be provided as a parameter, and overall that should be better thought
-
-            override fun compare(o1: Pair<KafkaBroker, Partition>, o2: Pair<KafkaBroker, Partition>): Int {
-                val nextInt = r.nextInt()
-                return if (nextInt == 0 || nextInt < 0) -1 else 1
-            }
-
-        }
 
         return ChangeReplicationFactorPartitionAssignmentStrategy(
                 plan,
@@ -45,7 +30,6 @@ class ChangeReplicationFactorModule : BaseReassignmentModule() {
                 replicationFactor,
                 brokers.values.toList(),
                 weightFn,
-                sortFn,
                 skipNoLeader
         )
     }

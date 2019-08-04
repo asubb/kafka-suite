@@ -8,8 +8,7 @@ import mu.KotlinLogging
 class BrokerLoadTracker(
         brokers: List<KafkaBroker>,
         private val plan: KafkaPartitionAssignment,
-        private val weightFn: (Partition) -> Int,
-        private val sortFn: Comparator<Pair<KafkaBroker, Partition>>
+        private val weightFn: WeightFn
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -22,7 +21,7 @@ class BrokerLoadTracker(
                     broker to
                             plan.partitions
                                     .filter { broker.id in it.replicas }
-                                    .map(weightFn)
+                                    .map { weightFn.weight(it) }
                                     .sum()
                 }.toTypedArray()
         )
@@ -36,7 +35,7 @@ class BrokerLoadTracker(
 
         val broker = brokerAndPartition.first
         val currentLoad = currentBrokerLoad.getValue(broker)
-        currentBrokerLoad[broker] = currentLoad + weightFn(forPartition)
+        currentBrokerLoad[broker] = currentLoad + weightFn.weight(forPartition)
         return broker
     }
 
@@ -46,14 +45,14 @@ class BrokerLoadTracker(
 
         val broker = brokerAndPartition.first
         val currentLoad = currentBrokerLoad.getValue(broker)
-        currentBrokerLoad[broker] = currentLoad - weightFn(forPartition)
+        currentBrokerLoad[broker] = currentLoad - weightFn.weight(forPartition)
         return broker
     }
 
     private fun sortNodes(nodes: Collection<KafkaBroker>, forPartition: Partition): List<Pair<KafkaBroker, Partition>> {
         return nodes
                 .zip((0 until nodes.size).map { forPartition })
-                .sortedWith(sortFn)
+                .sortedWith(weightFn.comparator())
     }
 
 }

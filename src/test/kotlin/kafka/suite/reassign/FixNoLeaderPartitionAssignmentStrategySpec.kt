@@ -30,8 +30,7 @@ class FixNoLeaderPartitionAssignmentStrategySpec : Spek({
         val strategy = FixNoLeaderPartitionAssignmentStrategy(
                 plan,
                 brokers,
-                { 1 }, // all partitions are the same
-                Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
+                MonoWeightFn()
         )
 
         val newPlan = strategy.newPlan()
@@ -68,8 +67,7 @@ class FixNoLeaderPartitionAssignmentStrategySpec : Spek({
         val strategy = FixNoLeaderPartitionAssignmentStrategy(
                 plan,
                 brokers,
-                { 1 }, // all partitions are the same
-                Comparator { _, _ -> 0 } // evenly balanced doesn't matter now
+                MonoWeightFn()
         )
 
         val newPlan = strategy.newPlan()
