@@ -74,8 +74,8 @@ class FixNoLeaderPartitionAssignmentStrategySpec : Spek({
 
         it("Partitions with no ISR should be fixed by moving to healthy nodes on different racks")   {
             assertThat(newPlan.partitions.size).isEqualTo(2)
-            assertThat(newPlan.partitions.first { it.partition == 1 }.replicas.toSet()).isEqualTo(setOf(1, 4))
-            assertThat(newPlan.partitions.first { it.partition == 2 }.replicas.toSet()).isEqualTo(setOf(1, 4))
+            assertThat(newPlan.partitions.first { it.partition == 1 }.replicas.toSet()).isEqualTo(setOf(3, 4))
+            assertThat(newPlan.partitions.first { it.partition == 2 }.replicas.toSet()).isEqualTo(setOf(3, 4))
         }
 
         it("Healthy partitions shouldn't be touched") {

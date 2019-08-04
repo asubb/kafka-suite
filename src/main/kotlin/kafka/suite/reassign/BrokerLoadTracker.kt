@@ -13,7 +13,7 @@ class BrokerLoadTracker(
 
     private val logger = KotlinLogging.logger {}
 
-    private val currentBrokerLoad: MutableMap<KafkaBroker, Int>
+    private val currentBrokerLoad: MutableMap<KafkaBroker, Long>
 
     init {
         currentBrokerLoad = mutableMapOf(*brokers
@@ -28,6 +28,21 @@ class BrokerLoadTracker(
         logger.debug { "currentBrokerLoad=$currentBrokerLoad" }
 
     }
+
+    private val comparator = Comparator { o1: Pair<KafkaBroker, Partition>, o2: Pair<KafkaBroker, Partition> ->
+        val b1Load = currentBrokerLoad.getValue(o1.first)
+        val b2Load = currentBrokerLoad.getValue(o2.first)
+
+        val d = b1Load + weightFn.weight(o1.second) - (b2Load + weightFn.weight(o2.second))
+
+        when {
+            d < 0 -> -1
+            d > 0 -> 1
+            else -> 0
+        }
+    }
+
+
 
     fun selectNode(nodes: Collection<KafkaBroker>, forPartition: Partition): KafkaBroker {
         val brokerAndPartition = sortNodes(nodes, forPartition)
@@ -52,7 +67,7 @@ class BrokerLoadTracker(
     private fun sortNodes(nodes: Collection<KafkaBroker>, forPartition: Partition): List<Pair<KafkaBroker, Partition>> {
         return nodes
                 .zip((0 until nodes.size).map { forPartition })
-                .sortedWith(weightFn.comparator())
+                .sortedWith(comparator)
     }
 
 }

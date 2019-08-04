@@ -7,6 +7,14 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 
+data class PartitionWeight(
+        val size: Long?,
+        val cpuCredits: Int?,
+        val memoryCredits: Int?,
+        val writeRate: Long?,
+        val readRate: Long?
+)
+
 data class ClusterProfile(
         val name: String,
         val active: Boolean,
@@ -17,7 +25,9 @@ data class ClusterProfile(
         /** Comma-separated list of broker-rack correspondence. If it can't be fetched by client. Example: `1040:AZ1,1039:AZ2`, if there is no racks, just specify nothing. */
         val racks: Map<Int, String>,
         /** For older version clusters the path to kafka cli binaries is required. */
-        val kafkaBin: String
+        val kafkaBin: String,
+        /** Weights for topics/partitions, key format is `topic1:1:2` -- defines for specific partitions of the topic, if partitions are absent, defines for all topic partitions. */
+        val weights: Map<String, PartitionWeight>? = null
 ) {
     companion object {
 
