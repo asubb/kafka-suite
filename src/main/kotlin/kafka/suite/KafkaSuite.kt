@@ -8,6 +8,7 @@ import java.lang.System.exit
 import org.slf4j.LoggerFactory
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
+import kafka.suite.client.ZkKafkaAdminClient
 
 private val d = Option("d", "dry-run", false, "Do not perform actually, just print out an intent. By default it runs really.")
 private val h = Option("h", "help", false, "Shows general help, or if module specified shows module help")
@@ -67,10 +68,11 @@ private fun runModule(cli: CommandLine, runnableModule: RunnableModule) {
             val kafkaCliPath = profile.kafkaBin
             val dryRun = cli.has(d)
 
-            val c = if (kafkaCliPath.isEmpty())
-                ScalaKafkaAdminClient(bootstrapServer, zkConnectionString)
-            else
-                CliKafkaAdminClient(bootstrapServer, zkConnectionString, kafkaCliPath)
+            val c = when {
+                kafkaCliPath.isNotEmpty() -> CliKafkaAdminClient(bootstrapServer, zkConnectionString, kafkaCliPath)
+                profile.zkClient ?: false -> ZkKafkaAdminClient(bootstrapServer, zkConnectionString)
+                else -> ScalaKafkaAdminClient(bootstrapServer, zkConnectionString)
+            }
 
             runnableModule.run(cli, c, dryRun)
         }

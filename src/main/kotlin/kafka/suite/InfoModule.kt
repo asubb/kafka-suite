@@ -19,14 +19,14 @@ class InfoModule : RunnableModule {
 
     override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean) {
         cli.ifHas(t) {
-            val topics = cli.get(t) { it.first().toString().split(",").toSet() } ?: emptySet()
+            val topics = cli.get(t) { it.split(",").toSet() } ?: emptySet()
             val assignment = kafkaAdminClient.currentAssignment(topics)
-            println("Assignment: $assignment")
+            printAssignment(assignment)
         }
 
         cli.ifHas(a) {
             val assignment = kafkaAdminClient.currentAssignment()
-            println("Assignment: $assignment")
+            printAssignment(assignment)
         }
 
         cli.ifHas(b) {
@@ -34,5 +34,23 @@ class InfoModule : RunnableModule {
 
             println("Brokers [${brokers.size}]: $brokers")
         }
+    }
+
+    private fun printAssignment(assignment: KafkaPartitionAssignment) {
+        assignment.partitions
+                .sortedBy { it.partition }
+                .groupBy { it.topic }
+                .forEach { (topic, partitions) ->
+                    println("Topic: $topic")
+                    partitions.forEach { p ->
+                        println(String.format(
+                                "\t%3s Replicas: [%s] ISR: [%s] Leader: %s",
+                                p.partition,
+                                p.replicas.joinToString(),
+                                p.inSyncReplicas.joinToString(),
+                                p.leader ?: "NONE"
+                        ))
+                    }
+                }
     }
 }

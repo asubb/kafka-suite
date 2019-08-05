@@ -27,8 +27,11 @@ data class ClusterProfile(
         /** For older version clusters the path to kafka cli binaries is required. */
         val kafkaBin: String,
         /** Weights for topics/partitions, key format is `topic1:1:2` -- defines for specific partitions of the topic, if partitions are absent, defines for all topic partitions. */
-        val weights: Map<String, PartitionWeight>? = null
+        val weights: Map<String, PartitionWeight>? = null,
+        /** Use ZK client which performs some actions in ZK directly as Kafka client doesn't provide needed functionality. */
+        val zkClient: Boolean? = null
 ) {
+
     companion object {
 
         private val profileDir = File(System.getProperty("user.home"))
