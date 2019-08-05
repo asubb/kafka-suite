@@ -1,6 +1,7 @@
 package kafka.suite
 
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -13,7 +14,11 @@ data class PartitionWeight(
         val memoryCredits: Int?,
         val writeRate: Long?,
         val readRate: Long?
-)
+) {
+    companion object {
+        val empty = PartitionWeight(null, null, null, null, null)
+    }
+}
 
 data class ClusterProfile(
         val name: String,
@@ -22,8 +27,6 @@ data class ClusterProfile(
         val zookeeper: String,
         /** Comma-separated list of brokers, i.e. `kafka1:9092,127.0.0.1:9092`. */
         val brokers: String,
-        /** Comma-separated list of broker-rack correspondence. If it can't be fetched by client. Example: `1040:AZ1,1039:AZ2`, if there is no racks, just specify nothing. */
-        val racks: Map<Int, String>,
         /** For older version clusters the path to kafka cli binaries is required. */
         val kafkaBin: String,
         /** Weights for topics/partitions, key format is `topic1:1:2` -- defines for specific partitions of the topic, if partitions are absent, defines for all topic partitions. */
@@ -38,6 +41,7 @@ data class ClusterProfile(
 
         private val mapper: ObjectMapper = jacksonObjectMapper().setDefaultPrettyPrinter(DefaultPrettyPrinter())
                 .enable(SerializationFeature.INDENT_OUTPUT)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
         fun readAll(): List<ClusterProfile> {
 
