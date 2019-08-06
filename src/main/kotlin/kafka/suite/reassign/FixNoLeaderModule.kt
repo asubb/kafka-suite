@@ -4,7 +4,6 @@ import kafka.suite.*
 import kafka.suite.client.KafkaAdminClient
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
-import java.util.*
 
 class FixNoLeaderModule : BaseReassignmentModule() {
 

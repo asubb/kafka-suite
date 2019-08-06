@@ -25,7 +25,9 @@ class ReplaceNodeModule : BaseReassignmentModule() {
 
 
         return ReplaceNodePartitionAssignmentStrategy(
+                brokers.values.toList(),
                 plan,
+                WeightFns.MONO.creatorFn(),
                 replacing,
                 substitution
         )

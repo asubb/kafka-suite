@@ -26,10 +26,10 @@ class ChangeReplicationFactorModule : BaseReassignmentModule() {
 
         return ChangeReplicationFactorPartitionAssignmentStrategy(
                 plan,
-                isrBased,
-                replicationFactor,
                 brokers.values.toList(),
                 weightFn,
+                isrBased,
+                replicationFactor,
                 skipNoLeader
         )
     }

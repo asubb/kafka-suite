@@ -2,19 +2,23 @@ package kafka.suite.reassign
 
 import kafka.suite.KafkaBroker
 import kafka.suite.KafkaPartitionAssignment
-import kafka.suite.client.KafkaAdminClient
 
 class ReplaceNodePartitionAssignmentStrategy(
-        private val plan: KafkaPartitionAssignment,
+        broker: List<KafkaBroker>,
+        plan: KafkaPartitionAssignment,
+        weightFn: WeightFn,
         private val nodeToReplace: KafkaBroker,
         private val substitutionNode: KafkaBroker
-) : PartitionAssignmentStrategy {
+) : PartitionAssignmentStrategy(broker, plan, weightFn) {
 
-    override fun newPlan(): KafkaPartitionAssignment {
+    override fun newPlan(topics: Set<String>): KafkaPartitionAssignment {
         return KafkaPartitionAssignment(
                 plan.version,
                 plan.partitions
+                        .filter { it.topic in topics || topics.isEmpty() }
                         .map { p ->
+                            brokerLoadTracker.selectNodeManually(substitutionNode, p)
+                            brokerLoadTracker.unselectNodeManually(nodeToReplace, p)
                             p.copy(
                                     replicas = p.replicas.map { if (it == nodeToReplace.id) substitutionNode.id else it }
                             )

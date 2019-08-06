@@ -42,7 +42,17 @@ class BrokerLoadTracker(
         }
     }
 
+    fun getLoad(): Map<KafkaBroker, Long> = currentBrokerLoad
 
+    fun selectNodeManually(broker: KafkaBroker, forPartition: Partition) {
+        val currentLoad = currentBrokerLoad.getValue(broker)
+        currentBrokerLoad[broker] = currentLoad + weightFn.weight(forPartition)
+    }
+
+    fun unselectNodeManually(broker: KafkaBroker, forPartition: Partition) {
+        val currentLoad = currentBrokerLoad.getValue(broker)
+        currentBrokerLoad[broker] = currentLoad - weightFn.weight(forPartition)
+    }
 
     fun selectNode(nodes: Collection<KafkaBroker>, forPartition: Partition): KafkaBroker {
         val brokerAndPartition = sortNodes(nodes, forPartition)

@@ -3,9 +3,9 @@ package kafka.suite.reassign
 import kafka.suite.ClusterProfile
 import kafka.suite.Partition
 
-enum class WeightFns(val id: String) {
-    PROFILE("profile"),
-    MONO("mono")
+enum class WeightFns(val id: String, val creatorFn: () -> WeightFn) {
+    PROFILE("profile", { ProfileBasedWeightFn() }),
+    MONO("mono", { MonoWeightFn() })
 }
 
 interface WeightFn {

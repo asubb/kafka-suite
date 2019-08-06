@@ -5,17 +5,17 @@ import kafka.suite.KafkaPartitionAssignment
 import mu.KotlinLogging
 
 class ChangeReplicationFactorPartitionAssignmentStrategy(
-        private val plan: KafkaPartitionAssignment,
+        plan: KafkaPartitionAssignment,
+        brokers: List<KafkaBroker>,
+        weightFn: WeightFn,
         private val isrBased: Boolean,
         private val replicationFactor: Int,
-        private val brokers: List<KafkaBroker>,
-        private val weightFn: WeightFn,
         private val skipNoLeader: Boolean = false
-) : PartitionAssignmentStrategy {
+) : PartitionAssignmentStrategy(brokers, plan, weightFn) {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun newPlan(): KafkaPartitionAssignment {
+    override fun newPlan(topics: Set<String>): KafkaPartitionAssignment {
         logger.debug {
             """
             ChangeReplicationFactorPartitionAssignmentStrategy(
@@ -26,11 +26,9 @@ class ChangeReplicationFactorPartitionAssignmentStrategy(
         """.trimIndent()
         }
 
-        val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn)
-
         val nodesByRack = brokers.groupBy { it.rack }
 
-        val newPartitions = plan.partitions.map { p ->
+        val newPartitions = plan.partitions.filter { it.topic in topics || topics.isEmpty() }.map { p ->
             logger.debug { "partition=$p" }
             val currentReplicas = if (isrBased) p.inSyncReplicas else p.replicas
             logger.debug { "currentReplicas=$currentReplicas" }

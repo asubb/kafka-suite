@@ -6,16 +6,14 @@ import kafka.suite.Partition
 import mu.KotlinLogging
 
 class ReplaceAbsentNodesPartitionAssignmentStrategy(
-        private val plan: KafkaPartitionAssignment,
-        private val brokers: List<KafkaBroker>,
-        private val weightFn: WeightFn
-) : PartitionAssignmentStrategy {
+        plan: KafkaPartitionAssignment,
+        brokers: List<KafkaBroker>,
+        weightFn: WeightFn
+) : PartitionAssignmentStrategy(brokers, plan, weightFn) {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun newPlan(): KafkaPartitionAssignment {
-
-        val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn)
+    override fun newPlan(topics: Set<String>): KafkaPartitionAssignment {
 
         val nodesByRack = brokers.groupBy { it.rack }
         logger.debug { "nodesByRack=$nodesByRack" }
@@ -30,6 +28,7 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
         return KafkaPartitionAssignment(
                 plan.version,
                 plan.partitions
+                        .filter { it.topic in topics || topics.isEmpty() }
                         .filter { it.inSyncReplicas.size < replicationFactors.getValue(it.topic) }
                         .map { p ->
                             logger.debug { "Partition $p" }

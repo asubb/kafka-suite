@@ -2,20 +2,18 @@ package kafka.suite.reassign
 
 import kafka.suite.KafkaBroker
 import kafka.suite.KafkaPartitionAssignment
-import kafka.suite.Partition
-import kafka.suite.client.KafkaAdminClient
 import mu.KotlinLogging
 
 class FixNoLeaderPartitionAssignmentStrategy(
-        private val plan: KafkaPartitionAssignment,
-        private val brokers: List<KafkaBroker>,
-        private val weightFn: WeightFn,
+        plan: KafkaPartitionAssignment,
+        brokers: List<KafkaBroker>,
+        weightFn: WeightFn,
         private val newReplicationFactor: Int? = null
-) : PartitionAssignmentStrategy {
+) : PartitionAssignmentStrategy(brokers, plan, weightFn) {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun newPlan(): KafkaPartitionAssignment {
+    override fun newPlan(topics: Set<String>): KafkaPartitionAssignment {
         logger.debug {
             """
             FixNoLeaderPartitionAssignmentStrategy(
@@ -24,11 +22,10 @@ class FixNoLeaderPartitionAssignmentStrategy(
         """.trimIndent()
         }
 
-        val brokerLoadTracker = BrokerLoadTracker(brokers, plan, weightFn)
-
         val nodesByRack = brokers.groupBy { it.rack }
 
         val newPartitions = plan.partitions
+                .filter { it.topic in topics || topics.isEmpty() }
                 .filter { it.leader == null }
                 .map { p ->
                     val replicationFactor = newReplicationFactor ?: p.replicas.size
