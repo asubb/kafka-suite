@@ -1,10 +1,65 @@
 # Kafka Suite
 
-The command line tool to help manage administrative Kafka issues, like partition balancing. Uses profile approach, so just store Kafka cluster settings once and switch between different clusters. 
+The command line tool to help manage administrative Kafka issues, like partition balancing. Uses profile approach, so just store Kafka cluster settings once and switch between different clusters.
+
+Current version is `0.1.1` 
 
 ## Getting started
 
-(TODO)
+### Prerequisites
+ 
+ * JRE 8 should be present and installed correctly.
+ * ZooKeeper cluster should be accessible via direct connection.
+ 
+### Installation
+
+* download binaries: [tar](https://github.com/asubb/kafka-suite/releases/download/0.1.1/ksuite-0.1.1.tar) or [zip](https://github.com/asubb/kafka-suite/releases/download/0.1.1/ksuite-0.1.1.zip)
+* unpack it: 
+    
+    ```bash
+    tar -xzf ksuite-0.1.1.tar
+    ```
+    
+    or
+    
+    ```bash
+    unzip ksuite-0.1.1.zip
+    ```
+* start using it: 
+    
+    ```bash
+    $KSUITE_HOME_DIRECTORY/bin/ksuite
+    ```
+
+### Compilation from sources
+
+In order to get the version from source you would need to have JDK 8 installed. Project uses Gradle build system with the wrapper, so you won't need to install anything extra, it'll download it.
+
+* Compile and run tests:
+
+    ```bash
+     ./gradlew build
+    ```
+
+* Tar distribution
+
+    ```bash
+    ./gradlew distTar
+    ```
+
+* Zip distribution
+
+    ```bash
+    ./gradlew distZip
+    ```
+
+#### IDE
+
+The Intellij IDE was used to develop the project. Inorder to set it up just open the `build.gradle` file in the IDE and add it as gradle project. That'll do.  
+
+Useful running Configuration:
+1. Main program: `Run configurations > Add new > Kotlin`, populate `Main Class` with `kafka.suite.KafkaSuiteKt`, provide command argument in `Program arguments` field
+2. Run all tests: `Run configurations > Add new > JUnit`, populate `Test kind` with `All in package` and package `kafka.suite`
 
 ## Kafka Suite modules
 
