@@ -34,7 +34,7 @@ ksuite module-name --module-parameter value
 
 ### Reassignment module group
 
-All modules in this pseudo-group are doing partition reassignment. 
+All modules in this pseudo-group are doing partition reassignment. Most of the modules use weight function, so make sure you set it up properly, the default one is MONO which treats all partitions the same. Also worth to mention, all partition planning is rack-aware.
 
 #### Replace node in Kafka custer
 
@@ -140,7 +140,32 @@ $HOME/ksuite reassignment --wait $WAIT_INTERVAL
 
 ### Replacing node in the cluster.
 
-If the cluster is in a good health but for any reason you want to replace the broker with another one, just first make sure it's on the cluster and operating well and then move all partitions from the broker you want 
+If the cluster is in a good health but for any reason you want to replace the broker with another one, just first make sure it's on the cluster and operating well and then move all partitions from the broker you want. 
+
+```bash
+R=$1                    # broker ID to replace 
+S=$2                    # broker ID to replace with 
+DRY_RUN=$3              # specify -d or --dry-run
+WAIT_INTERVAL=5         # interval between checks
+HOME=ksuite/bin         # path to ksuite execution file
+
+$HOME/ksuite replace-node $DRY_RUN --replacing $R --substitution $S 
+$HOME/ksuite reassignment --wait $WAIT_INTERVAL
+```
+
+### Replacing absent node in the cluster.
+
+If the node is absent, there is a way to detect it automatically and spread the partitions across the cluster. Uses weight function for choosing node to move partition to. Sometimes it may require to kick up the reassignment.
+
+```bash
+DRY_RUN=$1              # specify -d or --dry-run
+WAIT_INTERVAL=5         # interval between checks
+HOME=ksuite/bin         # path to ksuite execution file
+
+$HOME/ksuite replace-absent-node $DRY_RUN 
+$HOME/ksuite reassignment --wait $WAIT_INTERVAL
+```
+
 
 ## Questions?
 
