@@ -1,15 +1,12 @@
-name: CI
+name: Build And Test
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: setup-java
-        uses: olafurpg/setup-scala@v1
       - uses: actions/checkout@v1
-      - name: Build and test
-        run: ./gradlew build test
+      - uses: MrRamych/gradle-actions/openjdk-8@3.1
+        with:
+          args: test
