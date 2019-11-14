@@ -5,9 +5,11 @@ on: [push]
 jobs:
   build:
 
-    runs-on: setup-java
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Build and test
-      run: ./gradlew build test
+      - name: setup-java
+        uses: olafurpg/setup-scala@v1
+      - uses: actions/checkout@v1
+      - name: Build and test
+        run: ./gradlew build test
