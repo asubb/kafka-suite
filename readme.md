@@ -57,7 +57,7 @@ In order to get the version from source you would need to have JDK 8 installed. 
 
 The Intellij IDE was used to develop the project. Inorder to set it up just open the `build.gradle` file in the IDE and add it as gradle project. That'll do.  
 
-Useful running Configuration:
+Useful run configurations:
 1. Main program: `Run configurations > Add new > Kotlin`, populate `Main Class` with `kafka.suite.KafkaSuiteKt`, provide command argument in `Program arguments` field
 2. Run all tests: `Run configurations > Add new > JUnit`, populate `Test kind` with `All in package` and package `kafka.suite`
 

@@ -34,3 +34,6 @@ hs_err_pid*
 
 # MacOs files
 .DS_Store
+
+#allow gradle binaries
+!gradle/wrapper/gradle-wrapper.jar
