@@ -2,7 +2,6 @@ package kafka.suite
 
 import kafka.suite.client.KafkaAdminClient
 import kafka.suite.reassign.ProfileBasedWeightFn
-import kafka.suite.reassign.WeightFn
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
@@ -95,7 +94,7 @@ class InfoModule : RunnableModule {
                                                     abs(w) >= 1e15 -> Pair((w / 1e15), "P")
                                                     else -> Pair(w.toDouble(), "O_O don't you need to check your weights?")
                                                 }
-                                                String.format("%f.2%s", v.first, v.second)
+                                                String.format("%.2f%s", v.first, v.second)
                                             }()
                                     )
                                 } else {
