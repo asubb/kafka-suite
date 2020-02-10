@@ -8,6 +8,8 @@ import org.apache.commons.cli.Options
 class InfoModule : RunnableModule {
 
     private val t = Option("t", "topics", true, "Comma-separated list of topics to get info for")
+    private val f = Option("f", "filter-by-broker", true, "Gets info about topics that are on specific broker(s), " +
+            "brokers filter is  comma-separated list of ids, addresses or racks in any combination. Works with one of --all-topics or --topics")
     private val a = Option("a", "all-topics", false, "Get info for all topics")
     private val b = Option("b", "brokers", false, "Get info about brokers")
 
@@ -18,14 +20,37 @@ class InfoModule : RunnableModule {
     override fun getDescription(): String = "Gets info about cluster"
 
     override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean) {
+
+        fun loadAssignments(topics: Set<String> = emptySet()): KafkaPartitionAssignment {
+            return kafkaAdminClient.currentAssignment(topics).let { assignment ->
+                if (cli.has(f)) {
+                    val brokers = kafkaAdminClient.brokers()
+                    val filterOutTokens = cli.get(f) { it.split(",").map { it.toLowerCase() }.toSet() } ?: emptySet()
+                    assignment.copy(
+                            partitions = assignment.partitions.filter { partition ->
+                                val partitionBrokers = partition.replicas.map { brokers.getValue(it) }
+                                partitionBrokers.any {
+                                    it.address.toLowerCase() in filterOutTokens ||
+                                            it.id.toString().toLowerCase() in filterOutTokens ||
+                                            it.rack.toLowerCase() in filterOutTokens
+                                }
+                            }
+                    )
+                } else {
+                    assignment
+                }
+
+            }
+        }
+
         cli.ifHas(t) {
             val topics = cli.get(t) { it.split(",").toSet() } ?: emptySet()
-            val assignment = kafkaAdminClient.currentAssignment(topics)
+            val assignment = loadAssignments(topics)
             printAssignment(assignment)
         }
 
         cli.ifHas(a) {
-            val assignment = kafkaAdminClient.currentAssignment()
+            val assignment = loadAssignments()
             printAssignment(assignment)
         }
 
@@ -35,6 +60,7 @@ class InfoModule : RunnableModule {
             println("Brokers [${brokers.size}]: $brokers")
         }
     }
+
 
     private fun printAssignment(assignment: KafkaPartitionAssignment) {
         assignment.partitions
