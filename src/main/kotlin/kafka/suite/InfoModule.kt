@@ -1,9 +1,12 @@
 package kafka.suite
 
 import kafka.suite.client.KafkaAdminClient
+import kafka.suite.reassign.ProfileBasedWeightFn
+import kafka.suite.reassign.WeightFn
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
+import kotlin.math.abs
 
 class InfoModule : RunnableModule {
 
@@ -12,10 +15,12 @@ class InfoModule : RunnableModule {
             "brokers filter is  comma-separated list of ids, addresses or racks in any combination. Works with one of --all-topics or --topics")
     private val a = Option("a", "all-topics", false, "Get info for all topics")
     private val b = Option("b", "brokers", false, "Get info about brokers")
+    private val e = Option("e", "extended", false, "Prints extended partition information that includes some metrics " +
+            "based on your profile, i.e. the weight of the partitions. Works with one of --all-topics or --topics")
 
     override fun module(): Module = Module.INFO
 
-    override fun getOptions(): Options = Options().of(t, a, b)
+    override fun getOptions(): Options = Options().of(t, a, b, f, e)
 
     override fun getDescription(): String = "Gets info about cluster"
 
@@ -46,12 +51,12 @@ class InfoModule : RunnableModule {
         cli.ifHas(t) {
             val topics = cli.get(t) { it.split(",").toSet() } ?: emptySet()
             val assignment = loadAssignments(topics)
-            printAssignment(assignment)
+            printAssignment(assignment, cli.has(e))
         }
 
         cli.ifHas(a) {
             val assignment = loadAssignments()
-            printAssignment(assignment)
+            printAssignment(assignment, cli.has(e))
         }
 
         cli.ifHas(b) {
@@ -62,7 +67,8 @@ class InfoModule : RunnableModule {
     }
 
 
-    private fun printAssignment(assignment: KafkaPartitionAssignment) {
+    private fun printAssignment(assignment: KafkaPartitionAssignment, extended: Boolean) {
+        val weightFn = ProfileBasedWeightFn()
         assignment.partitions
                 .sortedBy { it.partition }
                 .groupBy { it.topic }
@@ -75,7 +81,27 @@ class InfoModule : RunnableModule {
                                 p.replicas.joinToString(),
                                 p.inSyncReplicas.joinToString(),
                                 p.leader ?: "NONE"
-                        ))
+                        ) +
+                                if (extended) {
+                                    String.format(" Weight: %s",
+                                            {
+                                                val w = weightFn.weight(p)
+                                                val v = when {
+                                                    abs(w) < 1_000 -> Pair((w.toDouble()), "")
+                                                    abs(w) >= 1e3 -> Pair((w / 1e3), "K")
+                                                    abs(w) >= 1e6 -> Pair((w / 1e6), "M")
+                                                    abs(w) >= 1e9 -> Pair((w / 1e9), "G")
+                                                    abs(w) >= 1e12 -> Pair((w / 1e12), "T")
+                                                    abs(w) >= 1e15 -> Pair((w / 1e15), "P")
+                                                    else -> Pair(w.toDouble(), "O_O don't you need to check your weights?")
+                                                }
+                                                String.format("%f.2%s", v.first, v.second)
+                                            }()
+                                    )
+                                } else {
+                                    ""
+                                }
+                        )
                     }
                 }
     }
