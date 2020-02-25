@@ -16,7 +16,7 @@ class FixNoLeaderModule : BaseReassignmentModule() {
 
     override fun getOptionList(): List<Option> = listOf(r)
 
-    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn): PartitionAssignmentStrategy {
+    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn, avoidBrokers: Set<Int>): PartitionAssignmentStrategy {
         val replicationFactor = cli.get(r) { it.toInt() }
 
         val brokers = kafkaAdminClient.brokers()
@@ -25,6 +25,7 @@ class FixNoLeaderModule : BaseReassignmentModule() {
                 plan,
                 brokers.values.toList(),
                 weightFn,
+                avoidBrokers,
                 replicationFactor
         )
     }

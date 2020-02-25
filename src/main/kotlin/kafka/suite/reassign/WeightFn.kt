@@ -33,7 +33,7 @@ class ProfileBasedWeightFn : WeightFn {
         val w = weights?.get("${partition.topic}:${partition.partition}")
                 ?: weights?.get(partition.topic)
 
-        val r = (w?.size ?: 0L) +
+        val r = (w?.size ?: 1L) +
                 (w?.cpuCredits?.toLong() ?: 0L) +
                 (w?.memoryCredits?.toLong() ?: 0L) +
                 (w?.readRate ?: 0L) +

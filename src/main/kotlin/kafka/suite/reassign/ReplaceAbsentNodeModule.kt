@@ -13,14 +13,15 @@ class ReplaceAbsentNodeModule : BaseReassignmentModule() {
 
     override fun getOptionList(): List<Option> = emptyList()
 
-    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn): PartitionAssignmentStrategy {
+    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn, avoidBrokers: Set<Int>): PartitionAssignmentStrategy {
 
         val brokers = kafkaAdminClient.brokers()
 
         return ReplaceAbsentNodesPartitionAssignmentStrategy(
                 plan,
                 brokers.values.toList(),
-                weightFn
+                weightFn,
+                avoidBrokers
         )
     }
 

@@ -41,7 +41,7 @@ class ReassignmentModule : RunnableModule {
                     var c = 0
                     var r = reassignment
                     while (r != null) {
-                        if (!quiet) println("Elapsed ${(System.currentTimeMillis() - start) / 1000.0f}s")
+                        if (!quiet) println("Left ${r.partitions.size} partitions. Elapsed ${(System.currentTimeMillis() - start) / 1000.0f}s")
                         if (c++ % 5 == 0) {
                             if (!quiet) printReassignment(assignment, r)
                         }

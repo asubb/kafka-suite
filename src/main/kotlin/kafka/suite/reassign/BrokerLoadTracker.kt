@@ -8,7 +8,8 @@ import mu.KotlinLogging
 class BrokerLoadTracker(
         brokers: List<KafkaBroker>,
         private val plan: KafkaPartitionAssignment,
-        private val weightFn: WeightFn
+        private val weightFn: WeightFn,
+        private val avoidBrokers: Set<Int>
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -56,7 +57,7 @@ class BrokerLoadTracker(
 
     fun selectNode(nodes: Collection<KafkaBroker>, forPartition: Partition): KafkaBroker {
         val brokerAndPartition = sortNodes(nodes, forPartition)
-                .first()// book the least loaded node
+                .first { it.first.id !in avoidBrokers } // book the least loaded node
 
         val broker = brokerAndPartition.first
         val currentLoad = currentBrokerLoad.getValue(broker)

@@ -8,8 +8,9 @@ import mu.KotlinLogging
 class ReplaceAbsentNodesPartitionAssignmentStrategy(
         plan: KafkaPartitionAssignment,
         brokers: List<KafkaBroker>,
-        weightFn: WeightFn
-) : PartitionAssignmentStrategy(brokers, plan, weightFn) {
+        weightFn: WeightFn,
+        avoidBrokers: Set<Int>
+) : PartitionAssignmentStrategy(brokers, avoidBrokers, plan, weightFn) {
 
     private val logger = KotlinLogging.logger {}
 

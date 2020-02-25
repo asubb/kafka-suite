@@ -8,8 +8,9 @@ class FixNoLeaderPartitionAssignmentStrategy(
         plan: KafkaPartitionAssignment,
         brokers: List<KafkaBroker>,
         weightFn: WeightFn,
+        avoidBrokers: Set<Int>,
         private val newReplicationFactor: Int? = null
-) : PartitionAssignmentStrategy(brokers, plan, weightFn) {
+) : PartitionAssignmentStrategy(brokers, avoidBrokers, plan, weightFn) {
 
     private val logger = KotlinLogging.logger {}
 

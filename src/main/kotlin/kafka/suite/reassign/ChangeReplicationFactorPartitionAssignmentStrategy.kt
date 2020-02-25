@@ -8,10 +8,11 @@ class ChangeReplicationFactorPartitionAssignmentStrategy(
         plan: KafkaPartitionAssignment,
         brokers: List<KafkaBroker>,
         weightFn: WeightFn,
+        avoidBrokers: Set<Int>,
         private val isrBased: Boolean,
         private val replicationFactor: Int,
         private val skipNoLeader: Boolean = false
-) : PartitionAssignmentStrategy(brokers, plan, weightFn) {
+) : PartitionAssignmentStrategy(brokers, avoidBrokers, plan, weightFn) {
 
     private val logger = KotlinLogging.logger {}
 

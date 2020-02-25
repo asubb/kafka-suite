@@ -16,7 +16,7 @@ class ReplaceNodeModule : BaseReassignmentModule() {
 
     override fun getOptionList(): List<Option> = listOf(r, s)
 
-    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn): PartitionAssignmentStrategy {
+    override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn, avoidBrokers: Set<Int>): PartitionAssignmentStrategy {
 
         val brokers = kafkaAdminClient.brokers()
 
@@ -28,6 +28,7 @@ class ReplaceNodeModule : BaseReassignmentModule() {
                 brokers.values.toList(),
                 plan,
                 WeightFns.MONO.creatorFn(),
+                avoidBrokers,
                 replacing,
                 substitution
         )
