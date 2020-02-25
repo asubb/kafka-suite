@@ -65,7 +65,7 @@ class InfoModule : RunnableModule {
         cli.ifHas(b) {
             val brokers = kafkaAdminClient.brokers()
 
-            val weightFn = cli.get(w) { WeightFns.valueOf(it).creatorFn() }
+            val weightFn = cli.get(w) { w -> WeightFns.values().first { it.id.toLowerCase() == w.toLowerCase() }.creatorFn() }
             val assignments = loadAssignments()
 
             val b = brokers

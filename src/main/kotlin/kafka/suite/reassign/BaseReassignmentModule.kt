@@ -23,7 +23,7 @@ abstract class BaseReassignmentModule : RunnableModule {
         val limitToTopics = cli.get(t) { it.split(",").toSet() } ?: emptySet()
         val avoidBrokers = cli.get(avoid) { it.split(",").map { it.toInt() }.toSet() } ?: emptySet()
         val plan = kafkaAdminClient.currentAssignment()
-        val weightFn = cli.get(w) { w -> WeightFns.values().first { it.id == w }.creatorFn() } ?: MonoWeightFn()
+        val weightFn = cli.get(w) { w -> WeightFns.values().first { it.id.toLowerCase() == w.toLowerCase() }.creatorFn() } ?: MonoWeightFn()
         val verbose = cli.has(v)
 
         logger.debug { "currentAssignment=$plan" }
