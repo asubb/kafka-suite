@@ -4,12 +4,14 @@ import kafka.suite.KafkaBroker
 import kafka.suite.KafkaPartitionAssignment
 import kafka.suite.Partition
 import mu.KotlinLogging
+import java.lang.Integer.min
 
 class ReplaceAbsentNodesPartitionAssignmentStrategy(
         plan: KafkaPartitionAssignment,
         brokers: List<KafkaBroker>,
         weightFn: WeightFn,
-        avoidBrokers: Set<Int>
+        avoidBrokers: Set<Int>,
+        private val maxReplicationFactor: Int = Int.MAX_VALUE
 ) : PartitionAssignmentStrategy(brokers, avoidBrokers, plan, weightFn) {
 
     private val logger = KotlinLogging.logger {}
@@ -65,7 +67,8 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
                                 logger.debug { "coverMoreRacks=$coverMoreRacks" }
 
                                 // if the partition still didn't find home, i.e. if replication factor > number of racks, it needs to choose some other node from the cluster.
-                                val nonCoveredReplicationFactor = replicationFactors.getValue(p.topic) - (coverMoreRacks.size + coveredRacks.size)
+                                val replicationFactorToSet = min(replicationFactors.getValue(p.topic), maxReplicationFactor)
+                                val nonCoveredReplicationFactor = replicationFactorToSet - (coverMoreRacks.size + coveredRacks.size)
                                 logger.debug { "nonCoveredReplicationFactor=$nonCoveredReplicationFactor" }
                                 val spreadTheRest = (0 until nonCoveredReplicationFactor)
                                         .map { bookNode(brokers, p) }
