@@ -88,7 +88,7 @@ class ReassignmentModule : RunnableModule {
 
     private fun printReassignment(assignment: KafkaPartitionAssignment, reassignment: KafkaPartitionAssignment) {
         val currentReplicasStateByPartitionAndTopic = assignment.partitions
-                .map { p -> p.partition to p.topic to p.replicas }
+                .map { p -> p.partition to p.topic to p.inSyncReplicas }
                 .toMap()
 
         reassignment.partitions
