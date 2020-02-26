@@ -11,7 +11,8 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
         brokers: List<KafkaBroker>,
         weightFn: WeightFn,
         avoidBrokers: Set<Int>,
-        private val maxReplicationFactor: Int = Int.MAX_VALUE
+        private val maxReplicationFactor: Int = Int.MAX_VALUE,
+        private val missingBrokers: Set<Int> = emptySet()
 ) : PartitionAssignmentStrategy(brokers, avoidBrokers, plan, weightFn) {
 
     private val logger = KotlinLogging.logger {}
@@ -32,7 +33,7 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
                 plan.version,
                 plan.partitions
                         .filter { it.topic in topics || topics.isEmpty() }
-                        .filter { it.inSyncReplicas.size < replicationFactors.getValue(it.topic) }
+                        .filter { it.replicas.any { it in missingBrokers } || it.inSyncReplicas.size < replicationFactors.getValue(it.topic) }
                         .map { p ->
                             logger.debug { "Partition $p" }
                             try {
@@ -41,7 +42,7 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
 
                                 val brokersLeft = brokers
                                         .map { it.id }
-                                        .filter { it !in inSyncReplicas }
+                                        .filter { it !in inSyncReplicas && it !in missingBrokers }
                                         .toMutableSet()
                                 logger.debug { "Brokers Left $brokersLeft" }
 

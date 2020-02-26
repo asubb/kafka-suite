@@ -11,21 +11,24 @@ class ReplaceAbsentNodeModule : BaseReassignmentModule() {
 
     override fun module(): Module = Module.REPLACE_ABSENT_NODE
 
-    private val r = Option("r", "replication-factor", true, "Maximum replication factor to set.").required()
+    private val r = Option("r", "replication-factor", true, "Maximum replication factor to set.")
+    private val b = Option("b", "missing-brokers", true, "Force to use missing brokers, comma separated IDs.")
 
-    override fun getOptionList(): List<Option> = listOf(r)
+    override fun getOptionList(): List<Option> = listOf(r, b)
 
     override fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn, avoidBrokers: Set<Int>): PartitionAssignmentStrategy {
 
         val brokers = kafkaAdminClient.brokers()
         val maxReplicationFactor = cli.get(r) { it.toInt() } ?: Int.MAX_VALUE
+        val missingBrokers = cli.get(b) { it.split(",").map { it.toInt() }.toSet() } ?: emptySet()
 
         return ReplaceAbsentNodesPartitionAssignmentStrategy(
                 plan,
                 brokers.values.toList(),
                 weightFn,
                 avoidBrokers,
-                maxReplicationFactor
+                maxReplicationFactor,
+                missingBrokers
         )
     }
 

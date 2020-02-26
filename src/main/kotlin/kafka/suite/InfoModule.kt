@@ -81,9 +81,9 @@ class InfoModule : RunnableModule {
                                 broker.first.id,
                                 broker.first.address,
                                 broker.first.rack
-                        ) + (weightFn?.let { weightFn ->
-                            String.format(" Weight: %s", partitionWeightAsString(broker.second))
-                        } ?: "")
+                        ) + (weightFn
+                                ?.let { String.format(" Weight: %s", partitionWeightAsString(broker.second)) }
+                                ?: "")
 
                     }
             println("Brokers [${brokers.size}]: \n$b")
