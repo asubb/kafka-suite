@@ -1,5 +1,34 @@
 # Kafka Suite
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  
+
+  - [Getting started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Compilation from sources](#compilation-from-sources)
+      - [IDE](#ide)
+  - [Kafka Suite modules](#kafka-suite-modules)
+    - [Reassignment module group](#reassignment-module-group)
+      - [Replace node in Kafka custer](#replace-node-in-kafka-custer)
+      - [Replace absent node in Kafka cluster](#replace-absent-node-in-kafka-cluster)
+      - [Fix No Leader](#fix-no-leader)
+      - [Reassignments tracking](#reassignments-tracking)
+    - [Profiles](#profiles)
+      - [Weight Functions](#weight-functions)
+    - [Analyze module](#analyze-module)
+    - [Info module](#info-module)
+  - [Kafka Suite recipes](#kafka-suite-recipes)
+    - [If someone killed brokers. A few of them.](#if-someone-killed-brokers-a-few-of-them)
+    - [Changing replication factor](#changing-replication-factor)
+    - [Replacing node in the cluster.](#replacing-node-in-the-cluster)
+    - [Replacing absent node in the cluster.](#replacing-absent-node-in-the-cluster)
+  - [Questions?](#questions)
+  - [TODOs](#todos)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 The command line tool to help manage administrative Kafka issues, like partition balancing. Uses profile approach, so just store Kafka cluster settings once and switch between different clusters.
 
 Current version is `0.2.0` 
@@ -235,12 +264,8 @@ If you find any issue with the toolset, or something is not clear in documentati
 
 ## TODOs
 
-* stopping reassignment automation:
-    - remove /admin/reassignment
-    - clean up partitions in /brokers/topics/$topic -- should be the same as ... ???
 * `reassignment --wait` to update all data, not only reassignment
 * cluster info:
-    * racks
     * who is controller
 * consumers
     - list
