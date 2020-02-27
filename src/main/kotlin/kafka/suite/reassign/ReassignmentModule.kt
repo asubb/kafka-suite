@@ -17,22 +17,23 @@ class ReassignmentModule : RunnableModule {
     private val w = Option("w", "wait", true, "Waits current reassignment to finish. " +
             "If -q flag specified doesn't output anything. As a parameter specify period of checking in seconds")
     private val q = Option("q", "quiet", false, "Do not output anything while waiting.")
+    private val l = Option("l", "force-leader", true, "Force leader election by setting it directly in ZK. Comma-separated list of topics as parameter or ALL. USE WITH CAUTION!")
 
     override fun getDescription(): String = "Describes current in progress reassignments. Can apply some fixes."
 
     override fun module(): Module = Module.REASSIGNMENT
 
-    override fun getOptions(): Options = Options().of(f, w, q)
+    override fun getOptions(): Options = Options().of(f, w, q, l)
 
     override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean) {
         val reassignment = kafkaAdminClient.currentReassignment()
 
+        val quiet = cli.has(q)
         if (reassignment != null) {
             when {
                 cli.has(f) -> forceReassignments(cli, reassignment, kafkaAdminClient)
                 cli.has(w) -> {
                     val delayInMs = cli.getRequired(w) { it.toLong() * 1000 }
-                    val quiet = cli.has(q)
 
                     val topics = reassignment.partitions.map { it.topic }.toSet()
                     val assignment = kafkaAdminClient.currentAssignment(topics)
@@ -52,6 +53,14 @@ class ReassignmentModule : RunnableModule {
                 }
                 else -> printReassignmentInProgress(reassignment, kafkaAdminClient)
             }
+        } else if (cli.has(l)) {
+            val topics = cli.getRequired(l) { it.split(",").toSet() }
+            kafkaAdminClient.currentAssignment(if (topics == setOf("ALL")) emptySet() else topics).partitions
+                    .filter { it.leader == null }
+                    .forEach { p ->
+                        if (!quiet) println("Forcing leader of partition $p")
+                        kafkaAdminClient.updatePartitionAssignment(p.topic, p.partition, p.replicas, p.inSyncReplicas.first())
+                    }
         } else {
             println("No active reassignments")
         }
