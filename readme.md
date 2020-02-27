@@ -2,7 +2,7 @@
 
 The command line tool to help manage administrative Kafka issues, like partition balancing. Uses profile approach, so just store Kafka cluster settings once and switch between different clusters.
 
-Current version is `0.1.1` 
+Current version is `0.2.0` 
 
 ## Getting started
 
@@ -13,22 +13,23 @@ Current version is `0.1.1`
  
 ### Installation
 
-* download binaries: [tar](https://github.com/asubb/kafka-suite/releases/download/0.1.1/ksuite-0.1.1.tar) or [zip](https://github.com/asubb/kafka-suite/releases/download/0.1.1/ksuite-0.1.1.zip)
+* download binaries: [tar](https://github.com/asubb/kafka-suite/releases/download/0.2.0/ksuite-0.2.0.tar) or [zip](https://github.com/asubb/kafka-suite/releases/download/0.2.0/ksuite-0.2.0.zip)
 * unpack it: 
     
     ```bash
-    tar -xzf ksuite-0.1.1.tar
+    tar -xzf ksuite-0.2.0.tar
     ```
     
     or
     
     ```bash
-    unzip ksuite-0.1.1.zip
+    unzip ksuite-0.2.0.zip
     ```
 * start using it: 
     
     ```bash
-    $KSUITE_HOME_DIRECTORY/bin/ksuite
+    cd ksuite-0.2.0/bin
+    ./ksuite
     ```
 
 ### Compilation from sources
@@ -51,6 +52,12 @@ In order to get the version from source you would need to have JDK 8 installed. 
 
     ```bash
     ./gradlew distZip
+    ```
+
+* Unpacked distributions
+
+    ```bash
+    ./gradlew installDist
     ```
 
 #### IDE
