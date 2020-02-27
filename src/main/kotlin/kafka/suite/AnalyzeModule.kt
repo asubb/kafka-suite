@@ -24,7 +24,8 @@ class AnalyzeModule : RunnableModule {
                 .mapNotNull { p ->
                     when {
                         p.leader == null -> p to "NO LEADER"
-                        p.inSyncReplicas != p.replicas -> p to "UNDER REPLICATED"
+                        p.inSyncReplicas.size != p.replicas.size -> p to "UNDER REPLICATED"
+                        p.inSyncReplicas.sorted() != p.replicas.sorted() -> p to "REBALANCING"
                         !p.replicas.all { it in brokerIds } || !p.inSyncReplicas.all { it in brokerIds } -> p to "ABSENT BROKER"
                         else -> null
                     }

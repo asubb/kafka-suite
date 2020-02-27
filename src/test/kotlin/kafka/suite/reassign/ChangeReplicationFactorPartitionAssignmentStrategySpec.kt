@@ -26,6 +26,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     plan,
                     brokers(4, 1),
                     MonoWeightFn(),
+                    emptySet(),
                     false,
                     1
             )
@@ -52,6 +53,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     plan,
                     brokers(4, 1),
                     MonoWeightFn(),
+                    emptySet(),
                     false,
                     2
             )
@@ -82,6 +84,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     plan,
                     brokers,
                     MonoWeightFn(),
+                    emptySet(),
                     false,
                     2
             )
@@ -119,6 +122,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     plan,
                     brokers(4, 1),
                     MonoWeightFn(),
+                    emptySet(),
                     false,
                     2
             )
@@ -149,6 +153,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                     plan,
                     brokers,
                     MonoWeightFn(),
+                    emptySet(),
                     false,
                     4
             )
@@ -199,6 +204,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                 plan,
                 brokers,
                 MonoWeightFn(),
+                emptySet(),
                 false,
                 4
         )
@@ -249,6 +255,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                 plan,
                 brokers,
                 MonoWeightFn(),
+                emptySet(),
                 false,
                 2
         )
@@ -298,6 +305,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                 plan,
                 brokers,
                 MonoWeightFn(),
+                emptySet(),
                 true,
                 1
         )
@@ -334,6 +342,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                 plan,
                 brokers,
                 MonoWeightFn(),
+                emptySet(),
                 true,
                 1
         )
@@ -367,6 +376,7 @@ object ChangeReplicationFactorPartitionAssignmentStrategySpec : Spek({
                 plan,
                 brokers,
                 MonoWeightFn(),
+                emptySet(),
                 true,
                 1,
                 skipNoLeader = true

@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import kafka.suite.client.ZkKafkaAdminClient
+import java.util.jar.JarFile
+import java.util.jar.Manifest
 
 private val d = Option("d", "dry-run", false, "Do not perform actually, just print out an intent. By default it runs really.")
 private val h = Option("h", "help", false, "Shows general help, or if module specified shows module help")
@@ -27,7 +29,7 @@ fun main(args: Array<String>) {
         runnableModule?.getOptions()?.options?.forEach { options.addOption(it) }
 
         if (runnableModule != null && (
-                        args.size > 1 && args[1].trim() == "-h"
+                        args.size > 1 && (args[1].trim() == "-h" || args[1].trim() == "--help")
                                 || args.size == 1 && runnableModule.getOptions().options.any { it.isRequired }
                         )
         ) {
@@ -99,7 +101,8 @@ private fun printModuleHelp(module: RunnableModule) {
 private fun printGeneralHelp() {
     val formatter = HelpFormatter()
     val writer = PrintWriter(System.out)
-    formatter.printUsage(writer, 80, "ksuite <module>", options)
+    formatter.printWrapped(writer, 80, "KSuite v.${readVersion()} ")
+    formatter.printUsage(writer, 80, "${readName()} <module>", options)
     formatter.printOptions(writer, 80, options, 0, 0)
     writer.flush()
     println()
@@ -108,4 +111,28 @@ private fun printGeneralHelp() {
         println("${it.key} - ${it.description}")
     }
     exit(1)
+}
+
+private fun readVersion(): String {
+    return Thread.currentThread().contextClassLoader.getResources(JarFile.MANIFEST_NAME)
+            .asSequence()
+            .mapNotNull {
+                it.openStream().use { stream ->
+                    Manifest(stream).mainAttributes.getValue("KSuite-Version")
+                }
+            }
+            .firstOrNull()
+            ?: "<NOT VERSIONED>"
+}
+
+private fun readName(): String {
+    return Thread.currentThread().contextClassLoader.getResources(JarFile.MANIFEST_NAME)
+            .asSequence()
+            .mapNotNull {
+                it.openStream().use { stream ->
+                    Manifest(stream).mainAttributes.getValue("KSuite-Name")
+                }
+            }
+            .firstOrNull()
+            ?: "<NOT NAMED>"
 }

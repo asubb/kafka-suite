@@ -15,18 +15,20 @@ abstract class BaseReassignmentModule : RunnableModule {
     private val t = Option("t", "topics", true, "Comma-separated list of topics to include, if not specified all topics will be included.")
     private val w = Option("w", "weightFn", true, "The name of the weight function: " + WeightFns.values().joinToString { it.id } + ". By default ${WeightFns.MONO.id}")
     private val v = Option("v", "verbose", false, "Print different information regarding reassignment.")
+    private val avoid = Option(null, "avoid-brokers", true, "Brokers to avoid moving partitions to.")
 
-    override fun getOptions(): Options = Options().of(t, w, v, *getOptionList().toTypedArray())
+    override fun getOptions(): Options = Options().of(t, w, v, avoid, *getOptionList().toTypedArray())
 
     override fun run(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, dryRun: Boolean) {
         val limitToTopics = cli.get(t) { it.split(",").toSet() } ?: emptySet()
+        val avoidBrokers = cli.get(avoid) { it.split(",").map { it.toInt() }.toSet() } ?: emptySet()
         val plan = kafkaAdminClient.currentAssignment()
-        val weightFn = cli.get(w) { w -> WeightFns.values().first { it.id == w }.creatorFn() } ?: MonoWeightFn()
+        val weightFn = cli.get(w) { w -> WeightFns.values().first { it.id.toLowerCase() == w.toLowerCase() }.creatorFn() } ?: MonoWeightFn()
         val verbose = cli.has(v)
 
         logger.debug { "currentAssignment=$plan" }
 
-        val strategy = getStrategy(cli, kafkaAdminClient, plan, weightFn)
+        val strategy = getStrategy(cli, kafkaAdminClient, plan, weightFn, avoidBrokers)
 
         if (verbose) println("Load before: \n${loadToString(strategy)}")
 
@@ -76,7 +78,7 @@ abstract class BaseReassignmentModule : RunnableModule {
             strategy.brokerLoadTracker.getLoad().entries
                     .joinToString(separator = "\n") { "\t${it.key.id} (${it.key.address}) -- ${it.value}" }
 
-    protected abstract fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn): PartitionAssignmentStrategy
+    protected abstract fun getStrategy(cli: CommandLine, kafkaAdminClient: KafkaAdminClient, plan: KafkaPartitionAssignment, weightFn: WeightFn, avoidBrokers: Set<Int>): PartitionAssignmentStrategy
 
     protected abstract fun getOptionList(): List<Option>
 }

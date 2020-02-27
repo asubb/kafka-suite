@@ -8,10 +8,11 @@ class ChangeReplicationFactorPartitionAssignmentStrategy(
         plan: KafkaPartitionAssignment,
         brokers: List<KafkaBroker>,
         weightFn: WeightFn,
+        avoidBrokers: Set<Int>,
         private val isrBased: Boolean,
         private val replicationFactor: Int,
         private val skipNoLeader: Boolean = false
-) : PartitionAssignmentStrategy(brokers, plan, weightFn) {
+) : PartitionAssignmentStrategy(brokers, avoidBrokers, plan, weightFn) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -50,7 +51,7 @@ class ChangeReplicationFactorPartitionAssignmentStrategy(
 
                     // if a few replicas on one rack we'll remove them first
                     val mostLoadedRackOrAllBrokers = currentReplicas.asSequence()
-                            .map { b -> brokers.first { it.id == b } }
+                            .map { b -> brokers.firstOrNull { it.id == b } ?: throw IllegalStateException("Broker $b for partition $p is not found") }
                             .groupBy { it.rack }
                             .map { it.key to it.value }
                             .groupBy { it.second.count() }

@@ -7,9 +7,10 @@ class ReplaceNodePartitionAssignmentStrategy(
         broker: List<KafkaBroker>,
         plan: KafkaPartitionAssignment,
         weightFn: WeightFn,
+        avoidBrokers: Set<Int>,
         private val nodeToReplace: KafkaBroker,
         private val substitutionNode: KafkaBroker
-) : PartitionAssignmentStrategy(broker, plan, weightFn) {
+) : PartitionAssignmentStrategy(broker, avoidBrokers, plan, weightFn) {
 
     override fun newPlan(topics: Set<String>): KafkaPartitionAssignment {
         return KafkaPartitionAssignment(
