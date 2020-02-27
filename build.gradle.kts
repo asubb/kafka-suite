@@ -50,14 +50,22 @@ dependencies {
 
 }
 
-val test by tasks.getting(Test::class) {
+tasks.test {
     useJUnitPlatform {
         includeEngines("spek2")
     }
 }
 
 configure<ApplicationPluginConvention> {
-    applicationName = "ksuite"
+    applicationName = properties["applicationName"]?.toString() ?: "<NO NAME>"
     mainClassName = "kafka.suite.KafkaSuiteKt"
 }
 
+tasks.jar {
+    manifest {
+        attributes(
+                "KSuite-Version" to properties["version"],
+                "KSuite-Name" to properties["applicationName"]
+        )
+    }
+}
