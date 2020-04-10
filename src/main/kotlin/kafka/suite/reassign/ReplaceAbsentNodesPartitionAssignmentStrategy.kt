@@ -39,6 +39,8 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
                             try {
                                 val inSyncReplicas = p.inSyncReplicas
                                         .filter { getRackForNode(it) != null } // filter out dead ISRs which may still be there
+                                var nonCoveredReplicationFactor = min(replicationFactors.getValue(p.topic), maxReplicationFactor)
+                                logger.debug {"nonCoveredReplicationFactor in the beginning: $nonCoveredReplicationFactor"}
 
                                 val brokersLeft = brokers
                                         .map { it.id }
@@ -57,20 +59,23 @@ class ReplaceAbsentNodesPartitionAssignmentStrategy(
                                 val coveredRacks = inSyncReplicas
                                         .map { r -> getRackForNode(r)!! }
                                         .toSet()
+                                nonCoveredReplicationFactor -= coveredRacks.size
+                                logger.debug {"nonCoveredReplicationFactor after checking ISR: $nonCoveredReplicationFactor"}
                                 logger.debug { "coveredRacks=$coveredRacks" }
                                 val uncoveredRacks = racks - coveredRacks
                                 logger.debug { "uncoveredRacks=$uncoveredRacks" }
 
+
                                 // if there are uncovered racks spotted, select node from it first, should be enough in case if replication factor <= number of racks
                                 val coverMoreRacks = uncoveredRacks.map { rack ->
                                     bookNode(nodesByRack.getValue(rack), p)
-                                }
+                                }.take(nonCoveredReplicationFactor)
                                 logger.debug { "coverMoreRacks=$coverMoreRacks" }
+                                nonCoveredReplicationFactor -= coverMoreRacks.size
+                                logger.debug {"After covering more racks $nonCoveredReplicationFactor"}
 
                                 // if the partition still didn't find home, i.e. if replication factor > number of racks, it needs to choose some other node from the cluster.
-                                val replicationFactorToSet = min(replicationFactors.getValue(p.topic), maxReplicationFactor)
-                                val nonCoveredReplicationFactor = replicationFactorToSet - (coverMoreRacks.size + coveredRacks.size)
-                                logger.debug { "nonCoveredReplicationFactor=$nonCoveredReplicationFactor" }
+                                logger.debug { "nonCoveredReplicationFactor before spreading the rest $nonCoveredReplicationFactor" }
                                 val spreadTheRest = (0 until nonCoveredReplicationFactor)
                                         .map { bookNode(brokers, p) }
                                 logger.debug { "spreadTheRest=$spreadTheRest" }

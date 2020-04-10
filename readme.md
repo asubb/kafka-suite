@@ -31,7 +31,7 @@
 
 The command line tool to help manage administrative Kafka issues, like partition balancing. Uses profile approach, so just store Kafka cluster settings once and switch between different clusters.
 
-Current version is `0.2.0` 
+Current version is `0.2.1` 
 
 ## Getting started
 
@@ -42,22 +42,22 @@ Current version is `0.2.0`
  
 ### Installation
 
-* download binaries: [tar](https://github.com/asubb/kafka-suite/releases/download/0.2.0/ksuite-0.2.0.tar) or [zip](https://github.com/asubb/kafka-suite/releases/download/0.2.0/ksuite-0.2.0.zip)
+* download binaries: [tar](https://github.com/asubb/kafka-suite/releases/download/0.2.1/ksuite-0.2.1.tar) or [zip](https://github.com/asubb/kafka-suite/releases/download/0.2.1/ksuite-0.2.1.zip)
 * unpack it: 
     
     ```bash
-    tar -xzf ksuite-0.2.0.tar
+    tar -xzf ksuite-0.2.1.tar
     ```
     
     or
     
     ```bash
-    unzip ksuite-0.2.0.zip
+    unzip ksuite-0.2.1.zip
     ```
 * start using it: 
     
     ```bash
-    cd ksuite-0.2.0/bin
+    cd ksuite-0.2.1/bin
     ./ksuite
     ```
 
