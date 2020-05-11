@@ -257,6 +257,31 @@ $HOME/ksuite replace-absent-node $DRY_RUN
 $HOME/ksuite reassignment --wait $WAIT_INTERVAL
 ```
 
+### Rebalancing cluster load with replication factor trick
+
+Let's assume the cluster is not balanced well and different nodes having troubles serving all traffic. The reason might be that a lot of heavy partitions are on the same nodes. Also for that recipe to work you need to have at least replication factor of 2.
+
+The idea here is to use proper Weight function, so you need to spend some time [tuning it](#weight-functions) for you [profile](#profiles) and make sure it looks exactly as in your monitoring job, look into [info module](#info-module).
+
+When it is ready, the idea is to decrease replication factor all the way to 1 and then back to desired replication factor. That doesn't solve problem absolutely right as still may have problems if non-replicated partitions are not spread efficiently, but that still is a viable solution for most cases. 
+
+One important note, while change replication back to desired value, it is essential to tell that **profile weight function** should be used, otherwise you'll get unbalanced cluster. Also it is recommended to increase replication factor slowly so your cluster space would perfectly fit the desired volume. 
+
+```bash
+DRY_RUN=$1              # specify -d or --dry-run
+WAIT_INTERVAL=5         # interval between checks
+HOME=ksuite/bin         # path to ksuite execution file
+RF=3                    # final replication factor
+
+# decrease replication to 1. Should be fairly fast.
+$HOME/ksuite change-replication-factor $DRY_RUN --replication-factor 1
+$HOME/ksuite reassignment --wait $WAIT_INTERVAL
+
+# increase replication back to desired value. Will take some time depending on your cluster size.
+$HOME/ksuite change-replication-factor $DRY_RUN --replication-factor $RF --weightFn profile
+$HOME/ksuite reassignment --wait $WAIT_INTERVAL
+```
+
 
 ## Questions?
 
